@@ -3,6 +3,7 @@
 /node_modules/
 /private/
 /.qa/
+/.codex-attachments/
 *.htm
 *.html
 *.mhtml

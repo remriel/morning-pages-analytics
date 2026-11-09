@@ -1,181 +1,335 @@
-const { ItemView, MarkdownView, Plugin, getFrontMatterInfo } = require("obsidian");
-const { WORD_GOAL, MAX_SNAPSHOT_SIZE, countWords, goalStatus, normalizeText, readStatsSnapshot } = snapshot;
+const { ItemView, MarkdownView, Plugin, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
+const { analyzeWriting, keywordCounts } = analysis;
+const { CACHE_VERSION, dailyDate, recordStats, loadRecords, combineKeywords } = history;
+const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
-const VIEW_TYPE = "morning-pages-analytics";
-const formatNumber = new Intl.NumberFormat();
+const STATS_VIEW = "morning-pages-analytics";
+const HISTORY_VIEW = "morning-pages-history";
+const DEFAULT_DAILY = { folder: "", format: "YYYY-MM-DD", template: "" };
 
-class MorningPagesView extends ItemView {
-  file = null;
-  noteText = null;
-  reference = null;
-  noteRevision = 0;
-  importRevision = 0;
+function noteBody(markdown) {
+  return markdown.slice(getFrontMatterInfo(markdown).contentStart);
+}
 
-  getViewType() { return VIEW_TYPE; }
-  getDisplayText() { return "Morning Pages Analytics"; }
+class WritingStatsView extends ItemView {
+  constructor(leaf, plugin) { super(leaf); this.plugin = plugin; }
+  getViewType() { return STATS_VIEW; }
+  getDisplayText() { return "Writing stats"; }
   getIcon() { return "bar-chart-3"; }
 
   async onOpen() {
-    const root = this.contentEl;
-    root.empty();
-    root.addClass("mpa-view");
-
-    const goal = root.createDiv({ cls: "mpa-goal" });
-    goal.createEl("h2", { text: "Morning Pages Analytics" });
-    this.noteName = goal.createDiv({ cls: "mpa-note-name" });
-    this.goalCount = goal.createDiv({ cls: "mpa-goal-count" });
-    this.progress = goal.createEl("progress", { attr: { max: WORD_GOAL, value: 0, "aria-label": "Progress to 750 words" } });
-    this.goalMessage = goal.createDiv({ cls: "mpa-goal-message", attr: { "aria-live": "polite" } });
-
-    const reference = root.createDiv({ cls: "mpa-reference" });
-    reference.createEl("h3", { text: "750 Words reference" });
-    reference.createEl("p", { text: "Replay a saved Stats page and compare its entry with the open note. Analysis of new writing requires the 750 Words scoring rules." });
-    const actions = reference.createDiv({ cls: "mpa-actions" });
-    const load = actions.createEl("button", { text: "Load saved Stats HTML", cls: "mod-cta" });
-    this.clear = actions.createEl("button", { text: "Clear reference" });
-    this.clear.hidden = true;
-    this.input = actions.createEl("input", { attr: { type: "file", accept: ".htm,.html,text/html" } });
-    this.input.hidden = true;
-    this.comparison = reference.createDiv({ cls: "mpa-comparison", attr: { "aria-live": "polite" } });
-    this.report = reference.createDiv({ cls: "mpa-report" });
-
-    this.registerDomEvent(load, "click", () => this.input.click());
-    this.registerDomEvent(this.clear, "click", () => this.clearReference());
-    this.registerDomEvent(this.input, "change", () => {
-      const selected = this.input.files?.[0];
-      this.input.value = "";
-      if (selected) void this.loadReference(selected);
-    });
-    this.registerEvent(this.app.workspace.on("file-open", (file) => {
-      if (file?.extension === "md") void this.track(file);
-    }));
-    this.registerEvent(this.app.workspace.on("editor-change", (editor, view) => {
-      if (!this.file || view?.file !== this.file) return;
-      this.noteRevision++;
-      this.updateText(editor.getValue());
-    }));
-    this.registerEvent(this.app.vault.on("delete", (file) => {
-      if (file === this.file) void this.track(null);
-    }));
-    this.registerEvent(this.app.vault.on("rename", (file) => {
-      if (file === this.file) this.refreshGoal();
-    }));
-
-    await this.track(this.app.workspace.getActiveFile());
+    this.plugin.statsViews.add(this);
+    this.draw();
+    await this.plugin.inspect(this.app.workspace.getActiveFile());
   }
 
   async onClose() {
-    this.noteRevision++;
-    this.importRevision++;
-    this.noteText = null;
-    this.reference = null;
-    this.contentEl.empty();
+    this.plugin.statsViews.delete(this);
+    this.contentEl.replaceChildren();
   }
 
-  async track(file) {
-    this.file = file?.extension === "md" ? file : null;
-    this.noteText = null;
-    const revision = ++this.noteRevision;
-    this.refreshGoal();
-    if (!this.file) return;
+  draw() {
+    renderStats(this.contentEl, this.plugin.live, () => void this.plugin.openView(HISTORY_VIEW));
+  }
+}
 
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (view?.file === file && view.getMode() === "source") {
-      this.updateText(view.editor.getValue());
-      return;
-    }
+class WritingHistoryView extends ItemView {
+  state = { range: 30, signal: "feelings", composition: "feelings", day: null, month: null };
+  disposeCharts = () => {};
 
-    try {
-      const text = await this.app.vault.cachedRead(file);
-      if (revision === this.noteRevision) this.updateText(text);
-    } catch {
-      if (revision === this.noteRevision) this.goalMessage.setText("Could not read the open note.");
-    }
+  constructor(leaf, plugin) { super(leaf); this.plugin = plugin; }
+  getViewType() { return HISTORY_VIEW; }
+  getDisplayText() { return "Writing history"; }
+  getIcon() { return "calendar-days"; }
+
+  async onOpen() {
+    this.plugin.historyViews.add(this);
+    this.draw();
   }
 
-  updateText(markdown) {
-    const { contentStart } = getFrontMatterInfo(markdown);
-    this.noteText = normalizeText(markdown.slice(contentStart));
-    this.refreshGoal();
+  async onClose() {
+    this.disposeCharts();
+    this.plugin.historyViews.delete(this);
+    this.contentEl.replaceChildren();
   }
 
-  refreshGoal() {
-    const count = this.noteText === null ? 0 : countWords(this.noteText);
-    const status = goalStatus(count);
-    this.noteName.setText(this.file?.basename ?? "Active Markdown note");
-    this.goalCount.setText(`${formatNumber.format(count)} / ${WORD_GOAL}`);
-    this.progress.value = Math.min(count, WORD_GOAL);
-    this.goalCount.classList.toggle("is-complete", status.complete);
-    if (this.noteText === null) this.goalMessage.setText(this.file ? "Reading note…" : "Open a Markdown note to track your writing.");
-    else if (status.complete) this.goalMessage.setText("750-word goal reached.");
-    else this.goalMessage.setText(`${status.remaining} ${status.remaining === 1 ? "word" : "words"} to go.`);
-    this.refreshComparison();
+  draw() {
+    this.disposeCharts();
+    this.disposeCharts = renderHistory(this.contentEl, {
+      entries: this.plugin.records.values(),
+      today: moment().format("YYYY-MM-DD"),
+      loading: Boolean(this.plugin.refreshing),
+      status: this.plugin.status,
+    }, this.state, {
+      refresh: () => void this.plugin.refreshHistory(true),
+      words: (period, previous, target) => void this.showWords(period, previous, target),
+      change: (update, selector) => {
+        Object.assign(this.state, update);
+        this.draw();
+        if (selector) this.contentEl.querySelector(selector)?.focus({ preventScroll: true });
+      },
+      openNote: (path) => {
+        const file = this.app.vault.getAbstractFileByPath(path);
+        if (file?.extension === "md") void this.app.workspace.getLeaf(true).openFile(file);
+      },
+    });
   }
 
-  async loadReference(file) {
-    const revision = ++this.importRevision;
-    this.comparison.setText("Reading saved Stats page…");
-    try {
-      if (file.size > MAX_SNAPSHOT_SIZE) throw new Error("This Stats HTML exceeds the 12 MB import limit.");
-      const text = await file.text();
-      if (revision !== this.importRevision) return;
-
-      const reference = readStatsSnapshot(text, this.report.ownerDocument);
-      this.report.replaceChildren(reference.fragment);
-      this.reference = reference;
-      this.clear.hidden = false;
-      this.refreshComparison();
-    } catch (error) {
-      if (revision !== this.importRevision) return;
-      this.report.empty();
-      this.reference = null;
-      this.clear.hidden = false;
-      this.comparison.setText(error instanceof Error ? error.message : "Could not read the Stats HTML file.");
-    }
-  }
-
-  clearReference() {
-    this.importRevision++;
-    this.reference = null;
-    this.report.empty();
-    this.comparison.empty();
-    this.clear.hidden = true;
-  }
-
-  refreshComparison() {
-    if (!this.reference) return;
-
-    const { referenceText, referenceWordCount } = this.reference;
-    const count = referenceWordCount === null ? "Saved entry." : `${formatNumber.format(referenceWordCount)} words in the saved entry.`;
-    if (referenceText === null || this.noteText === null) {
-      this.comparison.setText(count);
-      return;
-    }
-    const match = this.noteText === referenceText ? "The open note matches the saved entry text." : "The open note and the saved entry contain different text.";
-    this.comparison.setText(`${count} ${match}`);
+  async showWords(period, previous, target) {
+    const [current, baseline] = await Promise.all([
+      this.plugin.vocabulary(period), previous?.days.length ? this.plugin.vocabulary(previous) : null,
+    ]);
+    if (target.isConnected) renderVocabulary(target, current, baseline);
   }
 }
 
 module.exports = class MorningPagesAnalytics extends Plugin {
+  statsViews = new Set();
+  historyViews = new Set();
+  records = new Map();
+  dirty = new Set();
+  vocabularyCache = new Map();
+  live = {};
+  daily = DEFAULT_DAILY;
+  activeFile = null;
+  revision = 0;
+  status = "";
+  writeTail = Promise.resolve();
+
   onload() {
-    this.registerView(VIEW_TYPE, (leaf) => new MorningPagesView(leaf));
-    this.addCommand({
-      id: "open-stats",
-      name: "Open 750-word stats panel",
-      callback: () => { void this.openStats(); },
-    });
-    this.addRibbonIcon("bar-chart-3", "Open Morning Pages Analytics", () => { void this.openStats(); });
+    const { workspace, vault } = this.app;
+    this.ready = this.loadData().then((data) => { this.records = loadRecords(data); }, () => {});
+    this.registerView(STATS_VIEW, (leaf) => new WritingStatsView(leaf, this));
+    this.registerView(HISTORY_VIEW, (leaf) => new WritingHistoryView(leaf, this));
+    this.addCommand({ id: "open-stats", name: "Open writing stats", callback: () => void this.openView(STATS_VIEW) });
+    this.addCommand({ id: "open-history", name: "Open writing history", callback: () => void this.openView(HISTORY_VIEW) });
+    this.addCommand({ id: "refresh-history", name: "Refresh daily history", callback: () => void this.refreshHistory(true) });
+    this.addRibbonIcon("bar-chart-3", "Open writing stats", () => void this.openView(STATS_VIEW));
+
+    this.registerEvent(workspace.on("file-open", (file) => {
+      if (file && this.statsViews.size) void this.inspect(file);
+    }));
+    this.registerEvent(workspace.on("editor-change", (editor, view) => {
+      if (!this.statsViews.size || !view?.file || view.file !== this.activeFile) return;
+      this.recordEdit();
+      clearTimeout(this.statsTimer);
+      this.statsTimer = setTimeout(() => void this.inspect(view.file, editor), 110);
+    }));
+    this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
+    this.registerEvent(vault.on("modify", (file) => {
+      if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
+      if (dailyDate(file, this.daily, moment)) this.queue(file.path);
+    }));
+    this.registerEvent(vault.on("delete", (file) => {
+      if (file === this.activeFile) void this.inspect(null);
+      if (file.extension === "md") this.queue(file.path);
+      else if (Array.isArray(file.children)) void this.refreshHistory();
+    }));
+    this.registerEvent(vault.on("rename", (file, oldPath) => {
+      if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
+      if (file.extension === "md") {
+        this.queue(oldPath);
+        this.queue(file.path);
+      } else if (Array.isArray(file.children)) void this.refreshHistory();
+    }));
+    workspace.onLayoutReady(() => { if (!this.stopped) void this.refreshHistory(); });
   }
 
-  async openStats() {
+  onunload() {
+    this.stopped = true;
+    this.revision++;
+    clearTimeout(this.statsTimer);
+    clearTimeout(this.historyTimer);
+    for (const view of this.historyViews) view.disposeCharts();
+  }
+
+  async openView(type) {
     const workspace = this.app.workspace;
     const file = workspace.getActiveFile();
-    let leaf = workspace.getLeavesOfType(VIEW_TYPE)[0];
+    let leaf = workspace.getLeavesOfType(type)[0];
     if (!leaf) {
-      leaf = workspace.getRightLeaf(false) ?? workspace.getLeaf(true);
-      await leaf.setViewState({ type: VIEW_TYPE });
+      leaf = (type === STATS_VIEW ? workspace.getRightLeaf(false) : null) ?? workspace.getLeaf(true);
+      await leaf.setViewState({ type });
     }
-    if (leaf.view instanceof MorningPagesView && file) await leaf.view.track(file);
     await workspace.revealLeaf(leaf);
+    if (type === STATS_VIEW && file) await this.inspect(file);
+    if (type === HISTORY_VIEW) void this.refreshHistory();
+  }
+
+  async inspect(file, editor) {
+    clearTimeout(this.statsTimer);
+    const revision = ++this.revision;
+    if (this.activeFile !== file) this.editSession = null;
+    this.activeFile = file?.extension === "md" ? file : null;
+    if (!this.activeFile) {
+      this.live = {};
+      this.drawStats();
+      return;
+    }
+    if (this.live.name !== file.basename) {
+      this.live = { name: file.basename, message: "Reading note…" };
+      this.drawStats();
+    }
+    try {
+      const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+      const activeEditor = view?.file === file && view.getMode() === "source" ? view.editor : null;
+      const text = (editor ?? activeEditor)?.getValue() ?? await this.app.vault.cachedRead(file);
+      if (revision !== this.revision) return;
+      const stats = analyzeWriting(noteBody(text));
+      if (editor && this.editSession) this.editSession.current = stats.words;
+      const session = this.editSession;
+      const pace = session?.activeMs >= 3000 && session.current > session.start
+        ? { minutes: session.activeMs / 60000, wordsPerMinute: (session.current - session.start) * 60000 / session.activeMs }
+        : null;
+      this.live = { name: file.basename, date: dailyDate(file, this.daily, moment), stats, pace };
+    } catch {
+      if (revision !== this.revision) return;
+      this.live = { name: file.basename, message: "Could not read the open note." };
+    }
+    this.drawStats();
+  }
+
+  drawStats() { for (const view of this.statsViews) view.draw(); }
+  drawHistory() { for (const view of this.historyViews) view.draw(); }
+
+  recordEdit() {
+    const now = Date.now();
+    const session = this.editSession;
+    if (!session || now - session.latest > 30000) {
+      const words = this.live.stats?.words ?? 0;
+      this.editSession = { latest: now, activeMs: 0, start: words, current: words };
+    } else {
+      session.activeMs += Math.max(0, now - session.latest);
+      session.latest = now;
+    }
+  }
+
+  async dailySettings() {
+    const vault = this.app.vault;
+    const configPath = `${vault.configDir}/daily-notes.json`;
+    if (!(await vault.adapter.exists(configPath))) return DEFAULT_DAILY;
+    const config = JSON.parse(await vault.adapter.read(configPath));
+    const path = (value) => typeof value === "string" && value.trim().replace(/^\/+|\/+$/g, "") ? normalizePath(value.trim()) : "";
+    const template = path(config?.template);
+    return { folder: path(config?.folder), format: config?.format?.trim() || DEFAULT_DAILY.format, template: template && !template.endsWith(".md") ? `${template}.md` : template };
+  }
+
+  refreshHistory(force = false) {
+    if (this.refreshing) return this.refreshing;
+    this.refreshing = this.rebuildHistory(force).catch(() => {
+      this.status = "Could not read Daily Notes settings. Refresh to retry.";
+    }).finally(() => {
+      this.refreshing = null;
+      if (!this.stopped) {
+        this.drawHistory();
+        if (this.dirty.size) this.queue();
+      }
+    });
+    this.drawHistory();
+    return this.refreshing;
+  }
+
+  async rebuildHistory(force) {
+    await this.ready;
+    if (this.flushing) await this.flushing;
+    this.daily = await this.dailySettings();
+    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, dailyDate(file, this.daily, moment)]).filter(([, date]) => date);
+    const eligible = new Set(candidates.map(([file]) => file.path));
+    let changed = false;
+    let failed = 0;
+    for (const path of this.records.keys()) {
+      if (!eligible.has(path)) changed = this.records.delete(path) || changed;
+    }
+    for (let index = 0; index < candidates.length && !this.stopped; index += 8) {
+      const results = await Promise.allSettled(candidates.slice(index, index + 8).map(([file, date]) => this.indexFile(file, date, force)));
+      for (const result of results) {
+        if (result.status === "fulfilled") changed = result.value || changed;
+        else failed++;
+      }
+    }
+    if (this.stopped) return;
+    this.status = failed ? `${failed} daily ${failed === 1 ? "note could" : "notes could"} not be read.` : "";
+    if (changed) await this.persist();
+    if (this.activeFile && this.statsViews.size) void this.inspect(this.activeFile);
+  }
+
+  async indexFile(file, date, force) {
+    const path = file.path;
+    const { mtime, size } = file.stat;
+    const before = this.records.get(path);
+    if (!force && before?.mtime === mtime && before.size === size && before.date === date) return false;
+    const text = await this.app.vault.cachedRead(file);
+    if (this.stopped || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
+    this.records.set(path, { path, date, mtime, size, ...recordStats(analyzeWriting(noteBody(text))) });
+    return true;
+  }
+
+  queue(path) {
+    if (path) this.dirty.add(path);
+    clearTimeout(this.historyTimer);
+    this.historyTimer = setTimeout(() => this.flush(), 220);
+  }
+
+  flush() {
+    if (this.refreshing || this.flushing || this.stopped) return;
+    const paths = [...this.dirty];
+    this.dirty.clear();
+    this.flushing = this.updatePaths(paths).finally(() => {
+      this.flushing = null;
+      if (!this.stopped) {
+        this.drawHistory();
+        if (this.dirty.size) this.queue();
+      }
+    });
+  }
+
+  async updatePaths(paths) {
+    await this.ready;
+    const results = await Promise.allSettled(paths.map((path) => {
+      const file = this.app.vault.getAbstractFileByPath(path);
+      const date = dailyDate(file, this.daily, moment);
+      return date ? this.indexFile(file, date, true) : this.records.delete(path);
+    }));
+    if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
+    if (!this.stopped && results.some((result) => result.status === "fulfilled" && result.value)) await this.persist();
+  }
+
+  async persist() {
+    this.vocabularyCache.clear();
+    const data = { version: CACHE_VERSION, entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
+    try {
+      await this.writeTail;
+    } catch {
+      this.status = "The history cache could not be saved. Refresh to retry.";
+    }
+  }
+
+  vocabulary(period) {
+    const key = `${period.start}/${period.end}`;
+    if (this.vocabularyCache.has(key)) return this.vocabularyCache.get(key);
+    const result = this.collectVocabulary(period.days.flatMap((day) => day.entries));
+    this.vocabularyCache.set(key, result);
+    if (this.vocabularyCache.size > 4) this.vocabularyCache.delete(this.vocabularyCache.keys().next().value);
+    return result;
+  }
+
+  async collectVocabulary(entries) {
+    const counts = new Map();
+    let words = 0;
+    let missing = 0;
+    for (let index = 0; index < entries.length && !this.stopped; index += 8) {
+      const results = await Promise.allSettled(entries.slice(index, index + 8).map(async (entry) => {
+        const file = this.app.vault.getAbstractFileByPath(entry.path);
+        if (!file || file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
+        const text = await this.app.vault.cachedRead(file);
+        if (file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
+        combineKeywords(counts, keywordCounts(noteBody(text)));
+        words += entry.words;
+        return true;
+      }));
+      missing += results.filter((result) => result.status === "rejected" || !result.value).length;
+    }
+    return { counts, words, missing };
   }
 };

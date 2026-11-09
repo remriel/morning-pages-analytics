@@ -1,7 +1,9 @@
 # Wisdom
 
-## 2026-11-09 — Morning Pages Analytics
+## 2026-11-09 — Morning Pages Analytics 0.4.0
 
-1. **Least confidence.** The current service’s text-to-category scoring. I would verify an authorized implementation against raw results for controlled entries before claiming matching scores.
-2. **Biggest gap.** Writing pace and distractions depend on when edits happen. Points and badges can depend on prior activity. I would test with matching edit events and starting history as well as identical entry text.
-3. **Highest-impact assumption.** The current V2 per-entry Stats page defines the target. If the original V1 site or account-level reports are in scope, I would identify and verify those outputs separately before defining the fixtures.
+Evidence comes from `src/analysis.js`, five passing unit tests, the synthetic integration harness, and a native cache rebuild in Obsidian.
+
+1. **Least confident.** Whether the literal English cue lists consistently communicate what their labels suggest. Context and negation can make a match misleading. I would inspect example matches and keep the displayed counts transparent.
+2. **Biggest gap.** Historical note files carry no edit timing. I would gather timing during future writing sessions before adding a historical pace chart.
+3. **Highest-impact assumption.** Literal word counts are useful as lightweight tone and topic signals. If users read them as semantic judgments, I would label them as cue counts and keep the underlying terms easy to inspect.
