@@ -1,0 +1,9 @@
+/main.js
+/dist/
+/node_modules/
+/private/
+/.qa/
+*.htm
+*.html
+*.mhtml
+

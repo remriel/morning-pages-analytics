@@ -1,0 +1,10 @@
+{
+  "id": "morning-pages-analytics",
+  "name": "Morning Pages Analytics",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.7",
+  "description": "Test a 750-word writing goal and replay analytics from a saved 750 Words Stats page.",
+  "author": "remriel",
+  "authorUrl": "https://github.com/remriel",
+  "isDesktopOnly": false
+}
