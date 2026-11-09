@@ -1,0 +1,65 @@
+name: Publish Morning Pages Analytics release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-release.yml
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test and build plugin
+        run: |
+          node --test
+          node scripts/build.cjs
+          node --check main.js
+          test -s main.js
+          node -e 'const m=require("./manifest.json"),p=require("./package.json");if(m.version!==p.version)process.exit(1)'
+
+      - name: Package installation ZIP
+        run: |
+          VERSION=$(node -p 'require("./manifest.json").version')
+          zip -j "morning-pages-analytics-${VERSION}.zip" main.js manifest.json styles.css
+
+      - name: Publish versioned test release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p 'require("./manifest.json").version')
+          TAG="v${VERSION}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists. No changes made."
+            exit 0
+          fi
+          cat > release-notes.md <<'EOF'
+          Initial test release of Morning Pages Analytics for Obsidian.
+
+          - Track progress toward a 750-word writing goal in the active Markdown note.
+          - Import a saved 750 Words V2 Stats HTML page to replay its visible text and charts.
+          - Compare the saved entry with the active note when both contain text.
+
+          **Testing status:** This release is a preview. Native plugin activation in Obsidian is still awaiting manual verification. The plugin does not calculate new 750 Words analytics from fresh writing. It replays previously saved results.
+
+          Install the attached `main.js`, `manifest.json`, and `styles.css` under `.obsidian/plugins/morning-pages-analytics/` in a test vault, or extract the attached ZIP into that folder.
+          EOF
+          gh release create "${TAG}" main.js manifest.json styles.css "morning-pages-analytics-${VERSION}.zip" \
+            --target "${GITHUB_SHA}" \
+            --title "${TAG} (test release)" \
+            --prerelease \
+            --notes-file release-notes.md
