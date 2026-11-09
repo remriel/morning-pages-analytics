@@ -12,7 +12,7 @@ Deliver **Morning Pages Analytics 0.4.0**, a standalone Obsidian plugin for loca
 - [x] Five unit tests pass.
 - [x] GitHub upstream release workflow fast-forwarded and reconciled to the manifest's exact unprefixed `0.4.0` tag. Three direct assets and a ZIP are prepared.
 - [x] Pass the synthetic integration harness and verify native installation by the rebuilt v2 Daily Notes cache.
-- [ ] Publish and verify the release assets.
+- [x] Publish and verify the 0.4.0 release assets.
 
 ## Architecture
 
@@ -27,17 +27,17 @@ Deliver **Morning Pages Analytics 0.4.0**, a standalone Obsidian plugin for loca
 
 ## Release and provenance
 
-The upstream GitHub release workflow was incorporated and now validates exact manifest tags. The three direct plugin assets and the ZIP are prepared.
+The upstream GitHub release workflow was incorporated and now validates exact manifest tags. The `0.4.0` tag points to the release build. All three direct files and the contents of the installation ZIP match the tested build. [Release 0.4.0](https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.0)
 
 A source ZIP linked in a prior chat could not be retrieved from this environment. The range word-cloud behavior was rebuilt in the current source instead.
 
 ## Known limits and verification
 
 - Five unit tests pass, covering prose extraction and cue counts, keyword aggregation, configured Daily Notes matching, range and streak calculations, and cache validation.
-- The synthetic Obsidian runtime verified the view commands, six analytic groups, four rings, timeline and composition charts, filtered word cloud, and automatic cache updates. Native Obsidian startup confirmed the v2 cache rebuild. Desktop interaction is covered by the simulated view test.
+- The synthetic Obsidian runtime verified the view commands, six analytic groups, four rings, timeline and composition charts, filtered word cloud, and automatic cache updates. Native Obsidian startup confirmed the v2 cache rebuild. The execution environment blocked the headless browser screenshot, so visual evidence is limited to the rendered DOM checks.
 - Literal cue counts may not reflect meaning. Avoid claims of context-aware mood or topic understanding.
 - Keep writing content and analytics local to the vault.
 
 ## RESUME HERE
 
-Push the `0.4.0` tag, watch the release workflow, then verify that the release includes `main.js`, `manifest.json`, `styles.css`, and the ZIP. Use **Open writing history** for a native visual check.
+0.4.0 is published and installed. Use **Open writing history** to check the rendered dashboard in Obsidian. Preserve automatic indexing and the shared note and date range breakdowns in future changes.
