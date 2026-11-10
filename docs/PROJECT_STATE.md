@@ -2,7 +2,7 @@
 
 ## Objective
 
-Deliver **Morning Pages Analytics 0.4.0**, a standalone Obsidian plugin for local writing analysis and automatic Daily Notes history.
+Deliver **Morning Pages Analytics 0.4.1**, a standalone MIT licensed Obsidian plugin for local writing analysis and automatic Daily Notes history.
 
 ## Current status
 
@@ -12,7 +12,8 @@ Deliver **Morning Pages Analytics 0.4.0**, a standalone Obsidian plugin for loca
 - [x] Five unit tests pass.
 - [x] GitHub upstream release workflow fast-forwarded and reconciled to the manifest's exact unprefixed `0.4.0` tag. Three direct assets and a ZIP are prepared.
 - [x] Pass the synthetic integration harness and verify native installation by the rebuilt v2 Daily Notes cache.
-- [x] Publish and verify the 0.4.0 release assets.
+- [x] Add synthetic screenshots, GitHub banner, and MIT license.
+- [x] Publish and verify the public 0.4.1 release and install ZIP.
 
 ## Architecture
 
@@ -27,17 +28,17 @@ Deliver **Morning Pages Analytics 0.4.0**, a standalone Obsidian plugin for loca
 
 ## Release and provenance
 
-The upstream GitHub release workflow was incorporated and now validates exact manifest tags. The `0.4.0` tag points to the release build. All three direct files and the contents of the installation ZIP match the tested build. [Release 0.4.0](https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.0)
+The GitHub release workflow validates exact manifest tags. The `0.4.1` release is stable. The repository includes the MIT license. The release includes the three plugin files, `LICENSE`, the install ZIP, two synthetic screenshots, and the banner. ZIP entries and visual assets were verified against committed files. [Release 0.4.1](https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.1)
 
-A source ZIP linked in a prior chat could not be retrieved from this environment. The range word-cloud behavior was rebuilt in the current source instead.
+A source ZIP linked in a prior chat could not be retrieved from this environment. The range word-cloud behavior was rebuilt from its specification. Public screenshots use synthetic Daily Notes.
 
 ## Known limits and verification
 
 - Five unit tests pass, covering prose extraction and cue counts, keyword aggregation, configured Daily Notes matching, range and streak calculations, and cache validation.
-- The synthetic Obsidian runtime verified the view commands, six analytic groups, four rings, timeline and composition charts, filtered word cloud, and automatic cache updates. Native Obsidian startup confirmed the v2 cache rebuild. The execution environment blocked the headless browser screenshot, so visual evidence is limited to the rendered DOM checks.
+- The synthetic Obsidian runtime verified the view commands, six analytic groups, four rings, timeline and composition charts, filtered word cloud, and automatic cache updates. Native Obsidian startup confirmed the v2 cache rebuild. Public screenshots render both views with synthetic data.
 - Literal cue counts may not reflect meaning. Avoid claims of context-aware mood or topic understanding.
 - Keep writing content and analytics local to the vault.
 
 ## RESUME HERE
 
-0.4.0 is published and installed. Use **Open writing history** to check the rendered dashboard in Obsidian. Preserve automatic indexing and the shared note and date range breakdowns in future changes.
+0.4.1 is published and installed. Use **Open writing history** to browse indexed daily notes. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.

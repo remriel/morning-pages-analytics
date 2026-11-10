@@ -1,9 +1,9 @@
 # Wisdom
 
-## 2026-11-09 — Morning Pages Analytics 0.4.0
+## 2026-11-09 — Morning Pages Analytics 0.4.1
 
-Evidence comes from `src/analysis.js`, five passing unit tests, the synthetic integration harness, and a native cache rebuild in Obsidian.
+The user confirmed they own the code and want it open source. I chose the MIT license. Release 0.4.1 is published with synthetic screenshots and a banner. Five unit tests, a synthetic integration harness, a native cache rebuild, the release workflow, and the asset hashes passed.
 
-1. **Least confident.** Whether the literal English cue lists consistently communicate what their labels suggest. Context and negation can make a match misleading. I would inspect example matches and keep the displayed counts transparent.
+1. **Least confident.** How the chart layout feels on a phone screen. I would review labels and tap targets in the mobile app.
 2. **Biggest gap.** Historical note files carry no edit timing. I would gather timing during future writing sessions before adding a historical pace chart.
-3. **Highest-impact assumption.** Literal word counts are useful as lightweight tone and topic signals. If users read them as semantic judgments, I would label them as cue counts and keep the underlying terms easy to inspect.
+3. **Highest-impact assumption.** Public examples should use synthetic writing. I would replace them only after checking another sample has no private details.
