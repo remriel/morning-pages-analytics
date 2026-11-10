@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { analyzeWriting, keywordCounts, rankKeywords } = require("../src/analysis.js");
-const { CACHE_VERSION, dailyDate, includedDate, recordStats, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, loadRecords, combineKeywords } = require("../src/history.js");
+const { CACHE_VERSION, dailyDate, includedDate, normalizeFolders, recordStats, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, loadRecords, combineKeywords } = require("../src/history.js");
 
 test("includes a custom folder alongside Daily Notes without matching sibling paths", () => {
   const settings = { folder: "Daily", format: "YYYY-MM-DD", template: "" };
@@ -11,6 +11,18 @@ test("includes a custom folder alongside Daily Notes without matching sibling pa
   assert.equal(date("Morning/2026-11-05.md"), "2026-11-05");
   assert.equal(date("Morning Extra/2026-11-05.md"), null);
   assert.equal(date("Morning/2026-11-05.md", ""), null);
+});
+
+test("includes multiple folders and normalizes migrated settings", () => {
+  const settings = { folder: "Daily", format: "YYYY-MM-DD", template: "" };
+  const moment = (value) => ({ isValid: () => /^2026-11-0[1-9]$/.test(value), format: () => value });
+  const folders = normalizeFolders([" Morning/ ", "Journal", "Morning", "", null]);
+  assert.deepEqual(folders, ["Morning", "Journal"]);
+  assert.deepEqual(normalizeFolders(" Morning/ "), ["Morning"]);
+  for (const path of ["Daily/2026-11-05.md", "Morning/2026-11-05.md", "Journal/2026-11-05.md"]) {
+    assert.equal(includedDate({ path, extension: "md" }, settings, folders, moment), "2026-11-05");
+  }
+  assert.equal(includedDate({ path: "Journal Extra/2026-11-05.md", extension: "md" }, settings, folders, moment), null);
 });
 
 test("counts prose and matched language without counting code, link targets, or embeds", () => {

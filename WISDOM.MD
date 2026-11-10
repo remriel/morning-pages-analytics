@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — multiple writing folders
+
+1. **Least confidence:** Native Obsidian settings behavior with several rows. I would add and remove folders in a disposable vault and confirm history counts.
+2. **Biggest gap:** All added folders share the Daily Notes date format. I would consider per-folder formats if the user's folder names follow different conventions.
+3. **Highest-impact assumption:** The requested tracking is writing history indexing. I would adjust scope if the user also wants folder filtering in the active-note stats view.
+
 ## 2026-11-10 — custom folder release
 
 1. **Least confidence:** Native Obsidian settings interaction. I would test changing and clearing the folder in a disposable vault and confirm the history counts.

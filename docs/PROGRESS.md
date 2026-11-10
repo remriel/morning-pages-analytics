@@ -1,5 +1,17 @@
 # Progress
 
+## Current objective: release multiple writing folders in 0.4.4
+
+**Progress toward verified publication: 85%.** `[########--]`
+
+- [x] Add and remove multiple folder rows in settings.
+- [x] Migrate existing single-folder data and use the list throughout history indexing.
+- [x] Add matching and normalization test; update README and release copy.
+- [x] Run eight tests, build, and syntax check.
+- [ ] Publish tag 0.4.4 and verify CI and release assets.
+
+Next: complete local verification, commit and push, then publish and verify the release.
+
 ## Current objective: publish custom folder option in 0.4.3
 
 **Progress toward a verified, published release: 95%.** `[#########-]`

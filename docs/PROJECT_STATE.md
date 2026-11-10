@@ -1,5 +1,14 @@
 # Project State
 
+## 2026-11-10: multiple writing folders for 0.4.4
+
+- Settings now has Add folder and Remove controls for any number of vault-relative writing folders. `src/plugin.js` persists `customFolders`; loading migrates the prior `customFolder` string. `src/history.js` normalizes and deduplicates folder paths before matching dated notes. Daily Notes remain included.
+- All backfill, live note, and incremental history paths use the folder list. Empty settings rows are ignored in persisted data. Folder matching still uses the Daily Notes date format and includes subfolders when that format matches.
+
+## RESUME HERE (0.4.4)
+
+Finish local tests and build, publish tag 0.4.4, verify release assets and CI. Native Obsidian interaction remains a separate verification opportunity.
+
 ## 2026-11-10: additional writing folder for 0.4.3
 
 - Writing history now includes an optional vault-relative custom folder alongside the configured Daily Notes folder. Both use the Daily Notes filename date format; custom subfolders follow the format too.
