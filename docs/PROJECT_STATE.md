@@ -8,7 +8,7 @@
 
 ## RESUME HERE (0.4.7)
 
-Publish 0.4.7 and verify CI/assets. Native settings UI remains unverified. For Ledger choose Formatted filename and supply its title format, or leave blank if it matches Daily Notes.
+0.4.7 published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.7. CI 42920698666 passed and release files/ZIP are present. Native settings UI remains unverified. For Ledger choose Formatted filename and supply its title format, or leave blank if it matches Daily Notes.
 
 ## 2026-11-10: creation-date folder history and settings (0.4.6)
 
