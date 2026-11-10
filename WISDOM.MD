@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — automatic multi-format dates
+
+1. Least confident: native settings layout with twelve toggles; I would inspect desktop/mobile layouts next. Callback behavior is tested.
+2. Biggest gap: numeric day/month ambiguity cannot always be inferred from a title. Automatic mode skips conflicting dates; users can select the intended formats.
+3. Highest-impact assumption: the desired dates are fully represented by the title. Prefixed prose titles or ambiguous numeric names need explicit custom formats, not guesses.
+
 ## 2026-11-10 — per-folder date source
 
 1. Least confident: native settings interaction; verify source switching in a disposable Obsidian vault.

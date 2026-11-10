@@ -6,14 +6,29 @@ const history = require("../src/history.js");
 const analysis = require("../src/analysis.js");
 
 test("folder history migrates, refreshes arbitrary notes, and retains creation dates after edits", async () => {
+  const rows = [];
+  class Setting {
+    constructor() { rows.push(this); }
+    setName(name) { this.name = name; return this; }
+    setDesc() { return this; }
+    addControl(callback) {
+      const control = { setValue() { return this; }, setPlaceholder() { return this; }, addOptions() { return this; }, setButtonText() { return this; }, onClick(fn) { this.change = fn; return this; }, onChange(fn) { this.change = fn; return this; } };
+      callback(control); this.control = control; return this;
+    }
+    addText(fn) { return this.addControl(fn); }
+    addTextArea(fn) { return this.addControl(fn); }
+    addToggle(fn) { return this.addControl(fn); }
+    addDropdown(fn) { return this.addControl(fn); }
+    addButton(fn) { return this.addControl(fn); }
+  }
   class Plugin {
-    addSettingTab() {} registerView() {} addCommand() {} addRibbonIcon() {} registerEvent() {}
+    addSettingTab(tab) { this.tab = tab; } registerView() {} addCommand() {} addRibbonIcon() {} registerEvent() {}
     async loadData() { return { version: 2, customFolder: "Journal", entries: [] }; }
     async saveData(data) { this.saved = data; }
   }
   const sandbox = {
     module: { exports: {} }, analysis, history, dashboard: {}, setTimeout, clearTimeout,
-    require: () => ({ Plugin, ItemView: class {}, PluginSettingTab: class {}, Setting: class {},
+    require: () => ({ Plugin, ItemView: class {}, PluginSettingTab: class {}, Setting,
       moment: (value) => ({ isValid: () => /^2026-11-\d\d$/.test(value), format: () => value }),
       normalizePath: (value) => value, getFrontMatterInfo: () => ({ contentStart: 0 }) }),
   };
@@ -59,5 +74,15 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   await plugin.applyFolderChange();
   assert.equal(plugin.records.size, 0);
   assert.equal(plugin.saved.preferences.dateFormat, "DD-MM-YYYY");
+  plugin.customFolders = ["Journal"];
+  plugin.folderDateRules.Journal = { source: "filename", formats: [] };
+  plugin.tab.containerEl = { empty: () => { rows.length = 0; } };
+  plugin.tab.display();
+  await rows.find((row) => row.name === "2026-11-10").control.change(true);
+  await rows.find((row) => row.name === "September 13 2026").control.change(true);
+  assert.deepEqual(Array.from(plugin.saved.folderDateRules.Journal.formats), ["YYYY-MM-DD", "MMMM D YYYY"]);
+  await rows.find((row) => row.name === "Folder 1 date source").control.change("auto");
+  assert.equal(plugin.saved.folderDateRules.Journal.source, "auto");
+  assert.ok(rows.some((row) => row.name === "Automatic date recognition"));
   plugin.onunload();
 });

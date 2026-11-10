@@ -28,6 +28,7 @@ jobs:
         env:
           MPA_REQUIRE_BROWSER: "1"
         run: |
+          npm ci
           node --test
           node scripts/build.cjs
           node --check main.js
@@ -61,9 +62,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Choose formatted filenames or creation timestamps independently for each additional writing folder.
+          Automatically recognize twelve common filename date formats together, including written months such as September 13 2026.
 
-          Imported journals can use dates from their titles, with a per-folder format or the shared Daily Notes format. Arbitrarily titled notes can use creation dates. Changing the source automatically rebuilds history. Filename mode skips nonmatching titles without falling back to import timestamps. Existing folders keep their creation-date behavior until changed.
+          Choose Automatic filename dates for recognition without entering formats. Selected filename formats offers twelve presets with examples and supports multiple active formats plus optional custom formats. Conflicting numeric dates are skipped rather than guessed; select day-first or month-first manually when necessary. Existing single-format settings migrate automatically. Creation timestamp mode remains available independently for each folder.
 
           Morning Pages Analytics is an open-source Obsidian plugin for local writing stats and automatic Daily Notes history.
 

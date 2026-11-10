@@ -1,6 +1,23 @@
 const { WORD_GOAL, GROUPS } = require("./analysis.js");
 const DAY = 86400000;
 const CACHE_VERSION = 3;
+const DATE_FORMAT_PRESETS = [
+  ["YYYY-MM-DD", "2026-11-10"], ["YYYY.MM.DD", "2026.11.10"],
+  ["YYYY_MM_DD", "2026_11_10"], ["YYYYMMDD", "20261110"],
+  ["DD-MM-YYYY", "10-11-2026"], ["MM-DD-YYYY", "11-10-2026"],
+  ["D MMM YYYY", "10 Nov 2026"], ["MMMM D, YYYY", "November 10, 2026"],
+  ["MMMM D YYYY", "September 13 2026"], ["D MMMM YYYY", "13 September 2026"],
+  ["MMM D YYYY", "Sep 13 2026"], ["MMM D, YYYY", "Sep 13, 2026"],
+];
+
+function normalizeFolderRule(rule = {}) {
+  rule = rule || {};
+  const formats = Array.isArray(rule.formats) ? rule.formats : [typeof rule.format === "string" ? rule.format : ""];
+  return {
+    source: ["filename", "auto"].includes(rule.source) ? rule.source : "creation",
+    formats: [...new Set(formats.filter((format) => typeof format === "string").map((format) => format.trim()))],
+  };
+}
 const FIELDS = ["words", "unique", "paragraphs", "sentences", "positive", "negative"];
 const ordinal = (date) => Date.parse(`${date}T00:00:00Z`) / DAY;
 const isoDay = (day) => new Date(day * DAY).toISOString().slice(0, 10);
@@ -28,10 +45,16 @@ function includedDate(file, daily, folders, moment, includeSubfolders = true, fo
   if (file?.extension !== "md" || file.path === daily.template) return null;
   const folder = normalizeFolders(folders).filter((folder) => file.path.startsWith(`${folder}/`) && (includeSubfolders || !file.path.slice(folder.length + 1).includes("/"))).sort((a, b) => b.length - a.length)[0];
   if (!folder) return null;
-  const rule = folderDateRules[folder];
-  if (rule?.source === "filename") {
-    const settings = { ...daily, folder, format: rule.format?.trim() || daily.format };
-    return dailyDate(file, settings, moment) || dailyDate({ path: `${folder}/${file.path.split("/").at(-1)}`, extension: file.extension }, settings, moment);
+  const rule = normalizeFolderRule(folderDateRules[folder]);
+  if (rule.source === "filename" || rule.source === "auto") {
+    const formats = rule.source === "auto" ? [daily.format, ...DATE_FORMAT_PRESETS.map(([format]) => format)] : rule.formats;
+    const dates = new Set();
+    for (const format of formats) {
+      const settings = { ...daily, folder, format: format || daily.format };
+      const day = dailyDate(file, settings, moment) || dailyDate({ path: `${folder}/${file.path.split("/").at(-1)}`, extension: file.extension }, settings, moment);
+      if (day) dates.add(day);
+    }
+    return dates.size === 1 ? [...dates][0] : null;
   }
   const timestamp = file.stat?.ctime;
   if (!Number.isFinite(timestamp) || timestamp <= 0) return null;
@@ -138,4 +161,4 @@ function seriesBuckets(window) {
   return { first, last, step, buckets: [...buckets.values()] };
 }
 
-module.exports = { CACHE_VERSION, dailyDate, includedDate, normalizeFolders, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };
+module.exports = { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, dailyDate, includedDate, normalizeFolders, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };

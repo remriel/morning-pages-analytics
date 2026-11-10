@@ -1,6 +1,6 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
 const { analyzeWriting, keywordCounts } = analysis;
-const { CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
+const { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
@@ -151,7 +151,7 @@ class MorningPagesSettingsTab extends PluginSettingTab {
       }));
     this.plugin.customFolders.forEach((folder, index) => {
       const folderKey = () => normalizeFolders([this.plugin.customFolders[index]])[0] || "";
-      const rule = this.plugin.folderDateRules[folderKey()] || { source: "creation", format: "" };
+      const rule = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
       new Setting(this.containerEl).setName(`Folder ${index + 1}`)
         .addText((text) => {
           text.setPlaceholder("Journal/Morning Pages").setValue(folder).onChange(async (value) => {
@@ -171,19 +171,36 @@ class MorningPagesSettingsTab extends PluginSettingTab {
         }));
       {
         new Setting(this.containerEl).setName(`Folder ${index + 1} date source`)
-          .setDesc("Determines the calendar day. Filename mode never falls back to creation or modification time.")
-          .addDropdown((dropdown) => dropdown.addOptions({ creation: "Creation timestamp", filename: "Formatted filename" })
+          .setDesc("Automatic mode recognizes common date titles, including written months. Filename modes skip ambiguous or nonmatching titles, without falling back to timestamps.")
+          .addDropdown((dropdown) => dropdown.addOptions({ auto: "Automatic filename dates", filename: "Selected filename formats", creation: "Creation timestamp" })
             .setValue(rule.source).onChange(async (source) => {
               this.plugin.folderDateRules[folderKey()] = { ...this.plugin.folderDateRules[folderKey()], source };
               await this.plugin.applyFolderChange();
               this.display();
             }));
-        if (rule.source === "filename") new Setting(this.containerEl).setName(`Folder ${index + 1} filename format`)
-          .setDesc("For example YYYY-MM-DD or DD-MM-YYYY. Leave blank to use the Daily Notes format. Nonmatching titles are skipped.")
-          .addText((text) => text.setPlaceholder("Use Daily Notes format").setValue(rule.format || "").onChange((format) => {
-            this.plugin.folderDateRules[folderKey()] = { source: "filename", format: format.trim() };
-            this.plugin.scheduleFolderRefresh();
-          }));
+        if (rule.source === "auto") new Setting(this.containerEl).setName("Automatic date recognition")
+          .setDesc(`Recognizes ${DATE_FORMAT_PRESETS.length} common formats plus the Daily Notes format. No formats to add. If a numeric title could mean two different dates, use Selected filename formats to choose day-first or month-first.`);
+        if (rule.source === "filename") {
+          const choices = [["", "Use Daily Notes format"], ...DATE_FORMAT_PRESETS];
+          for (const [format, example] of choices) new Setting(this.containerEl).setName(example)
+            .setDesc(format || "Also match the configured Daily Notes format.")
+            .addToggle((toggle) => toggle.setValue(rule.formats.includes(format)).onChange(async (enabled) => {
+              const current = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
+              current.source = "filename";
+              current.formats = enabled ? [...new Set([...current.formats, format])] : current.formats.filter((value) => value !== format);
+              this.plugin.folderDateRules[folderKey()] = current;
+              await this.plugin.applyFolderChange();
+            }));
+          const presets = new Set(choices.map(([format]) => format));
+          new Setting(this.containerEl).setName("Other filename formats")
+            .setDesc("Optional: one custom format per line. All enabled formats are matched together. If none are enabled, this folder has no filename matches.")
+            .addTextArea((text) => text.setPlaceholder("YYYY/MM/DD").setValue(rule.formats.filter((format) => !presets.has(format)).join("\n")).onChange((value) => {
+              const current = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
+              current.formats = [...new Set([...current.formats.filter((format) => presets.has(format)), ...value.split(/\r?\n/).map((format) => format.trim()).filter(Boolean)])];
+              this.plugin.folderDateRules[folderKey()] = current;
+              this.plugin.scheduleFolderRefresh();
+            }));
+        }
       }
     });
   }
@@ -213,7 +230,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       this.customFolders = normalizeFolders(data?.customFolders ?? data?.customFolder ?? []);
       this.folderDateRules = Object.fromEntries(this.customFolders.map((folder) => {
         const rule = data?.folderDateRules?.[folder];
-        return [folder, { source: rule?.source === "filename" ? "filename" : "creation", format: typeof rule?.format === "string" ? rule.format.trim() : "" }];
+        return [folder, normalizeFolderRule(rule)];
       }));
       const saved = data?.preferences || {};
       this.preferences = {

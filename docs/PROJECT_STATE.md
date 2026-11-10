@@ -1,5 +1,16 @@
 # Project State
 
+## 2026-11-10: automatic and multiple filename formats, 0.4.8
+
+- Per-folder source `auto` recognizes twelve common formats plus the Daily Notes format simultaneously. Includes full/short month names, with and without commas, numeric separators and compact dates. Recognition happens per title; no setup or prevalence scan is needed.
+- Manual filename mode offers twelve preset toggles, inherited Daily Notes format, and newline-separated custom formats. `normalizeFolderRule` migrates old `format` strings to `formats` arrays; an empty array means no formats enabled. Existing sources remain unchanged.
+- Multiple successful parsings must agree on one calendar day; conflicting dates are excluded rather than guessed or replaced by timestamps. Day/month ambiguity requires manual format choice.
+- Sixteen tests pass including real Moment parsing of all presets, written-month dates, mixed-format folders, migration, ambiguous/invalid dates, and settings callbacks persisting multiple selections. Moment 2.31.0 is a dev-only test dependency; Obsidian supplies the runtime parser. CI runs npm ci. Build and browser regression pass; native settings layout remains unverified.
+
+## RESUME HERE (0.4.8)
+
+Publish 0.4.8 and verify release CI/assets. For Ledger choose Automatic filename dates or manually enable its formats if numeric titles are ambiguous.
+
 ## 2026-11-10: per-folder date sources, 0.4.7
 
 - User needs imported Ledger journal entries dated by titles rather than filesystem import times. Each additional folder now offers creation timestamp or formatted filename, with optional format (blank inherits Daily Notes format).

@@ -1,6 +1,6 @@
 {
   "name": "morning-pages-analytics",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "private": true,
   "scripts": {
     "build": "node scripts/build.cjs",
@@ -8,5 +8,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "moment": "2.31.0"
   }
 }

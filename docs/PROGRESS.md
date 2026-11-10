@@ -1,5 +1,16 @@
 # Progress
 
+## Current objective: automatic recognition and format presets, 0.4.8
+
+**Progress: 90%.** `[#########-]`
+
+- [x] Twelve presets, including written months, recognized together automatically.
+- [x] Manual multiple-choice presets with simultaneous matching and custom formats.
+- [x] Migration and ambiguity handling; sixteen tests, build, browser and syntax checks pass.
+- [ ] Publish 0.4.8 and verify release CI/assets.
+
+Next: publish tag, verify release, record completion.
+
 ## Current objective: per-folder date source, 0.4.7
 
 **Progress: 100%.** `[##########]`
