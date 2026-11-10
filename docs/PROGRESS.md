@@ -2,15 +2,15 @@
 
 ## Current objective: release multiple writing folders in 0.4.4
 
-**Progress toward verified publication: 85%.** `[########--]`
+**Progress toward verified publication: 100%.** `[##########]`
 
 - [x] Add and remove multiple folder rows in settings.
 - [x] Migrate existing single-folder data and use the list throughout history indexing.
 - [x] Add matching and normalization test; update README and release copy.
 - [x] Run eight tests, build, and syntax check.
-- [ ] Publish tag 0.4.4 and verify CI and release assets.
+- [x] Publish tag 0.4.4; release workflow 42899490865 passed and direct plugin assets and installation ZIP are present.
 
-Next: complete local verification, commit and push, then publish and verify the release.
+Next optional check: exercise multiple folder rows in native Obsidian. The local eight tests, build, syntax check, and release CI passed.
 
 ## Current objective: publish custom folder option in 0.4.3
 

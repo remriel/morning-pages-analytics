@@ -4,10 +4,11 @@
 
 - Settings now has Add folder and Remove controls for any number of vault-relative writing folders. `src/plugin.js` persists `customFolders`; loading migrates the prior `customFolder` string. `src/history.js` normalizes and deduplicates folder paths before matching dated notes. Daily Notes remain included.
 - All backfill, live note, and incremental history paths use the folder list. Empty settings rows are ignored in persisted data. Folder matching still uses the Daily Notes date format and includes subfolders when that format matches.
+- Eight local tests, build, and syntax check passed. The 0.4.4 GitHub release workflow passed and published the installation ZIP and direct plugin files: https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.4. Native Obsidian interaction for multiple rows remains unverified.
 
 ## RESUME HERE (0.4.4)
 
-Finish local tests and build, publish tag 0.4.4, verify release assets and CI. Native Obsidian interaction remains a separate verification opportunity.
+0.4.4 is published. Next verification opportunity: add, remove, and migrate multiple folders in native Obsidian and confirm matching dated notes appear or disappear from history.
 
 ## 2026-11-10: additional writing folder for 0.4.3
 
