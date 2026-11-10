@@ -24,7 +24,13 @@ function normalizeFolders(folders) {
 
 function includedDate(file, daily, folders, moment) {
   return dailyDate(file, daily, moment) || normalizeFolders(folders)
-    .map((folder) => dailyDate(file, { ...daily, folder }, moment)).find(Boolean) || null;
+    .map((folder) => {
+      const settings = { ...daily, folder };
+      const direct = dailyDate(file, settings, moment);
+      if (direct || !file?.path.startsWith(`${folder}/`)) return direct;
+      const basename = file.path.slice(file.path.lastIndexOf("/") + 1);
+      return dailyDate({ ...file, path: `${folder}/${basename}` }, settings, moment);
+    }).find(Boolean) || null;
 }
 
 function safeCount(value) {
@@ -65,6 +71,7 @@ function groupDays(entries) {
     day.entries.push(entry);
     addStats(day, entry);
   }
+  for (const day of days.values()) day.entries.sort((a, b) => (b.mtime || 0) - (a.mtime || 0) || (a.path || "").localeCompare(b.path || ""));
   return [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 

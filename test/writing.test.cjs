@@ -23,6 +23,7 @@ test("includes multiple folders and normalizes migrated settings", () => {
     assert.equal(includedDate({ path, extension: "md" }, settings, folders, moment), "2026-11-05");
   }
   assert.equal(includedDate({ path: "Journal Extra/2026-11-05.md", extension: "md" }, settings, folders, moment), null);
+  assert.equal(includedDate({ path: "Journal/2026/November/2026-11-05.md", extension: "md" }, settings, folders, moment), "2026-11-05");
 });
 
 test("counts prose and matched language without counting code, link targets, or embeds", () => {
@@ -82,6 +83,17 @@ test("history groups same-day notes, respects gaps, and preserves totals across 
   const custom = historyWindow(days, "2026-11-09", "custom", { start: "2026-11-02", end: "2026-11-04" });
   assert.deepEqual(custom.days.map(({ date }) => date), ["2026-11-02", "2026-11-04"]);
   assert.deepEqual(previousWindow(days, custom).days.map(({ date }) => date), ["2026-10-30", "2026-11-01"]);
+});
+
+test("orders notes within each day by latest modification timestamp", () => {
+  const entries = [
+    { path: "Daily/first.md", date: "2026-11-05", mtime: 1, ...recordStats({ words: 2 }) },
+    { path: "Morning/second.md", date: "2026-11-05", mtime: 5, ...recordStats({ words: 3 }) },
+    { path: "Journal/third.md", date: "2026-11-05", mtime: 5, ...recordStats({ words: 4 }) },
+  ];
+  const [day] = groupDays(entries);
+  assert.deepEqual(day.entries.map((entry) => entry.path), ["Journal/third.md", "Morning/second.md", "Daily/first.md"]);
+  assert.equal(day.words, 9);
 });
 
 test("cache load validates records and strips transient vocabulary", () => {

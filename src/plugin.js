@@ -122,16 +122,13 @@ class MorningPagesSettingsTab extends PluginSettingTab {
         .addText((text) => text.setPlaceholder("Journal/Morning Pages").setValue(folder).onChange(async (value) => {
           await this.plugin.ready;
           this.plugin.customFolders[index] = value;
-          await this.plugin.persist();
-          if (this.plugin.refreshing) await this.plugin.refreshing;
-          await this.plugin.refreshHistory();
+          this.plugin.scheduleFolderRefresh();
         }))
         .addButton((button) => button.setButtonText("Remove").onClick(async () => {
           await this.plugin.ready;
+          clearTimeout(this.plugin.folderTimer);
           this.plugin.customFolders.splice(index, 1);
-          await this.plugin.persist();
-          if (this.plugin.refreshing) await this.plugin.refreshing;
-          await this.plugin.refreshHistory();
+          await this.plugin.applyFolderChange();
           this.display();
         }));
     });
@@ -147,6 +144,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   live = {};
   daily = DEFAULT_DAILY;
   customFolders = [];
+  folderTimer = null;
   activeFile = null;
   revision = 0;
   status = "";
@@ -197,6 +195,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.revision++;
     clearTimeout(this.statsTimer);
     clearTimeout(this.historyTimer);
+    clearTimeout(this.folderTimer);
     for (const view of this.historyViews) view.disposeCharts();
   }
 
@@ -284,6 +283,17 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     });
     this.drawHistory();
     return this.refreshing;
+  }
+
+  scheduleFolderRefresh() {
+    clearTimeout(this.folderTimer);
+    this.folderTimer = setTimeout(() => void this.applyFolderChange(), 450);
+  }
+
+  async applyFolderChange() {
+    await this.persist();
+    if (this.refreshing) await this.refreshing;
+    if (!this.stopped) await this.refreshHistory();
   }
 
   async rebuildHistory(force) {

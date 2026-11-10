@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — timestamp ordering and folder refresh
+
+1. **Least confidence:** Native Obsidian interaction for multiple folder rows. I would test adding/removing folders while history is open in a disposable vault.
+2. **Biggest gap:** Filename date still determines calendar placement; modification time determines order within a day. I would add a separate timestamp-based grouping mode if the user wants calendar dates based on file metadata.
+3. **Highest-impact assumption:** "Order by timestamp" means newest-modified note first within each day. I would change direction if the intended order is creation time or oldest first.
+
 ## 2026-11-10 — multiple writing folders
 
 1. **Least confidence:** Native Obsidian settings behavior with several rows. I would add and remove folders in a disposable vault and confirm history counts.

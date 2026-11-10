@@ -23,6 +23,8 @@ The plugin reads the configured Daily Notes folder and date format. On startup i
 
 To include more folders, open **Settings → Morning Pages Analytics → Additional writing folders** and select **Add folder** for each vault-relative path, such as `Journal/Morning Pages`. Use **Remove** to stop tracking a folder. Notes there use the Daily Notes filename date format. Daily Notes remain included.
 
+Folder changes refresh writing history automatically after typing settles. Nested subfolders are included, and notes within each day's detail are ordered by modification time, newest first.
+
 **Open writing history** shows 7, 30, 90, 365, All, and custom date ranges. The dashboard includes word totals, writing and goal streaks, tone and topic trends, language composition, a date calendar, day-by-day entry inspection, and a word cloud with exact word-frequency counts. Finite ranges can be compared with the preceding period.
 
 ## Local data

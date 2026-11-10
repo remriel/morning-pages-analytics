@@ -1,5 +1,16 @@
 # Project State
 
+## 2026-11-10: timestamp ordering and folder refresh for 0.4.5
+
+- `src/history.js` sorts each day's note entries by modification timestamp descending, with path as a stable tie break. Calendar days still use filename dates in chronological order.
+- Added folder changes now refresh automatically after a 450 ms typing pause; removing a folder refreshes immediately. This avoids a full index rebuild on each keystroke.
+- Fixed nested added-folder notes with ordinary dated basenames being skipped. Matching tries the full relative path first (for Daily Notes formats with subpaths), then the basename for nested notes.
+- Nine tests, build, and syntax check passed locally. Native Obsidian interaction remains unverified.
+
+## RESUME HERE (0.4.5)
+
+Publish and verify release 0.4.5. Check the setting with multiple folders in native Obsidian when available.
+
 ## 2026-11-10: multiple writing folders for 0.4.4
 
 - Settings now has Add folder and Remove controls for any number of vault-relative writing folders. `src/plugin.js` persists `customFolders`; loading migrates the prior `customFolder` string. `src/history.js` normalizes and deduplicates folder paths before matching dated notes. Daily Notes remain included.

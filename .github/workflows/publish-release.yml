@@ -61,9 +61,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Track multiple additional writing folders alongside Daily Notes in writing history.
+          Order notes within each day by their modification timestamp, newest first, and refresh writing history automatically after folder settings change.
 
-          Use **Add folder** under **Additional writing folders** in plugin settings to track as many vault folders as you need. Remove a folder to stop tracking it. Existing single-folder settings migrate automatically. Matching dated notes in these folders and their subfolders use the configured Daily Notes date format.
+          Folder changes now trigger a history refresh after typing settles. Notes in added folders and nested subfolders are indexed using the configured Daily Notes date format. Day detail shows the most recently modified note first. Existing single-folder settings migrate automatically.
 
           Morning Pages Analytics is an open-source Obsidian plugin for local writing stats and automatic Daily Notes history.
 
