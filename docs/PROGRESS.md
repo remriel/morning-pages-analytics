@@ -1,5 +1,18 @@
 # Progress
 
+## Current objective: preserve dashboard position
+
+**Progress toward a verified, published fix: 85%.** `[#########-]`
+
+- [x] Reconcile the current source with the installed 0.4.1 release and preserve the older dirty checkout.
+- [x] Identify full dashboard redraw and asynchronous vocabulary rendering as causes of disruptive scrolling.
+- [x] Preserve scroll and keyboard focus on history updates, including delayed vocabulary rendering.
+- [x] Add regression coverage and verify interactions with synthetic data in desktop and narrow browser layouts.
+- [x] Install and verify the fixed build in Remy.
+- [ ] Publish and verify a new GitHub release.
+
+Current blocker: the shared AI Brain vault is unavailable at both configured paths. All six tests pass, including browser checks for desktop and narrow layouts; native Obsidian retained scroll position and calendar focus, with no captured errors. Next: publish 0.4.2, verify the workflow and release assets, and update these records.
+
 ## Objective
 
 Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plugin with local analysis and automatic Daily Notes history.

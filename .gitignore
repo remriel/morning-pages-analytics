@@ -6,5 +6,7 @@
 /.codex-attachments/
 *.htm
 *.html
+!test/fixtures/dashboard-scroll.html
 *.mhtml
+/.playwright-cli/
 

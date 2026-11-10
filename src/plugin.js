@@ -36,6 +36,7 @@ class WritingStatsView extends ItemView {
 class WritingHistoryView extends ItemView {
   state = { range: 30, signal: "feelings", composition: "feelings", day: null, month: null };
   disposeCharts = () => {};
+  drawVersion = 0;
 
   constructor(leaf, plugin) { super(leaf); this.plugin = plugin; }
   getViewType() { return HISTORY_VIEW; }
@@ -54,6 +55,8 @@ class WritingHistoryView extends ItemView {
   }
 
   draw() {
+    const scrollTop = this.contentEl.scrollTop;
+    const drawVersion = ++this.drawVersion;
     this.disposeCharts();
     this.disposeCharts = renderHistory(this.contentEl, {
       entries: this.plugin.records.values(),
@@ -62,24 +65,44 @@ class WritingHistoryView extends ItemView {
       status: this.plugin.status,
     }, this.state, {
       refresh: () => void this.plugin.refreshHistory(true),
-      words: (period, previous, target) => void this.showWords(period, previous, target),
+      words: (period, previous, target) => void this.showWords(period, previous, target, drawVersion),
       change: (update, selector) => {
         Object.assign(this.state, update);
         this.draw();
-        if (selector) this.contentEl.querySelector(selector)?.focus({ preventScroll: true });
+        if (selector) {
+          let control = this.contentEl.querySelector(selector);
+          if (control?.disabled && control.closest(".mpa-calendar-header")) {
+            const header = control.closest(".mpa-calendar-header");
+            control = header.querySelector("button:not(:disabled)") ?? header;
+          }
+          control?.focus({ preventScroll: true });
+        }
       },
       openNote: (path) => {
         const file = this.app.vault.getAbstractFileByPath(path);
         if (file?.extension === "md") void this.app.workspace.getLeaf(true).openFile(file);
       },
     });
+    this.contentEl.scrollTop = scrollTop;
   }
 
-  async showWords(period, previous, target) {
+  async showWords(period, previous, target, drawVersion) {
     const [current, baseline] = await Promise.all([
       this.plugin.vocabulary(period), previous?.days.length ? this.plugin.vocabulary(previous) : null,
     ]);
-    if (target.isConnected) renderVocabulary(target, current, baseline);
+    if (!target.isConnected || drawVersion !== this.drawVersion) return;
+    if (this.renderedWords?.target === target && this.renderedWords.current === current && this.renderedWords.baseline === baseline) return;
+
+    // A cloud above the viewport can change height after the async read. Keep
+    // the calendar at the same screen position, using the current scroll
+    // position rather than one captured before the user had time to scroll.
+    const lower = this.contentEl.querySelector(".mpa-history-lower");
+    const anchor = lower && target.getBoundingClientRect().top < this.contentEl.getBoundingClientRect().top ? lower : null;
+    const before = anchor?.getBoundingClientRect().top;
+    renderVocabulary(target, current, baseline);
+    target.style.minHeight = "";
+    if (anchor) this.contentEl.scrollTop += anchor.getBoundingClientRect().top - before;
+    this.renderedWords = { target, current, baseline };
   }
 }
 

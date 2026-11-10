@@ -1,0 +1,130 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Writing history scroll regression</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; font: 15px Arial, sans-serif; }
+  .mpa-view { box-sizing: border-box; height: 560px; width: 960px; }
+  :root { --font-ui-small: 13px; --font-ui-smaller: 11px; --font-ui-medium: 16px; --text-normal: #222; --text-muted: #555; --background-modifier-border: #ccc; --background-modifier-hover: #eee; }
+</style>
+<div id="history"></div>
+<pre id="result">PENDING</pre>
+<script>
+  window.module = { exports: {} };
+  window.require = () => ({
+    ItemView: class { constructor(leaf) { this.contentEl = leaf.contentEl; this.app = leaf.app; } },
+    Plugin: class {},
+    moment: () => ({ format: () => "2026-11-09" }),
+  });
+</script>
+<script src="../../main.js"></script>
+<script>
+  (async () => {
+    const assert = (condition, message) => { if (!condition) throw new Error(message); };
+    const near = (actual, expected, message) => assert(Math.abs(actual - expected) < 3, `${message}: ${actual} vs ${expected}`);
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const entry = (date) => ({ path: `Daily/${date}.md`, date, ...history.recordStats(analysis.analyzeWriting("A happy friend explored work, growth and music today.")) });
+    const records = ["2026-08-03", "2026-09-05", "2026-10-04", "2026-10-20", "2026-11-02", "2026-11-09"].map(entry);
+    const cache = new Map();
+    const plugin = {
+      records: new Map(records.map((record) => [record.path, record])),
+      status: "",
+      vocabulary(period) {
+        const key = `${period.start}/${period.end}`;
+        if (!cache.has(key)) {
+          const quantity = period.start === "2026-08-03" ? 40 : 3;
+          const counts = new Map(Array.from({ length: quantity }, (_, index) => [`syntheticword${index}`, quantity - index]));
+          cache.set(key, new Promise((resolve) => setTimeout(() => resolve({ counts, words: 1000, missing: 0 }), 250)));
+        }
+        return cache.get(key);
+      },
+    };
+    const root = document.querySelector("#history");
+    if (location.search.includes("mobile")) root.style.width = "360px";
+    const view = new WritingHistoryView({ contentEl: root, app: {} }, plugin);
+    view.state.range = 0;
+    view.state.rangeChosen = true;
+    view.draw();
+    await delay(300);
+
+    const selectValue = (selector, value) => {
+      const select = root.querySelector(selector);
+      select.focus({ preventScroll: true });
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    const scrollTo = (selector) => {
+      root.querySelector(selector).scrollIntoView({ block: "center" });
+      assert(root.scrollTop > 100, `fixture did not scroll to ${selector}`);
+      return root.scrollTop;
+    };
+    const sameScroll = (position, message) => near(root.scrollTop, Math.min(position, root.scrollHeight - root.clientHeight), message);
+
+    let before = scrollTo(".mpa-signal");
+    selectValue(".mpa-signal", "topic-work");
+    sameScroll(before, "signal selection changed scroll position");
+    assert(view.state.signal === "topic-work", "signal selection did not update");
+    assert(document.activeElement.matches(".mpa-signal"), "signal lost keyboard focus");
+
+    before = scrollTo(".mpa-composition");
+    selectValue(".mpa-composition", "topics");
+    sameScroll(before, "composition selection changed scroll position");
+    assert(view.state.composition === "topics", "composition selection did not update");
+
+    before = scrollTo(".mpa-previous-month");
+    const month = view.state.month;
+    root.querySelector(".mpa-previous-month").focus({ preventScroll: true });
+    root.querySelector(".mpa-previous-month").click();
+    sameScroll(before, "previous month changed scroll position");
+    assert(view.state.month !== month, "previous month did not update");
+    assert(document.activeElement.matches(".mpa-previous-month"), "calendar navigation lost keyboard focus");
+    await delay(300);
+    sameScroll(before, "cached cloud changed scroll position later");
+
+    const calendarDay = root.querySelector('button.mpa-day[aria-pressed="false"]');
+    assert(calendarDay, "fixture has no other calendar day");
+    const selectedDay = calendarDay.dataset.day;
+    before = scrollTo(`button.mpa-day[data-day="${selectedDay}"]`);
+    calendarDay.focus({ preventScroll: true });
+    calendarDay.click();
+    sameScroll(before, "calendar day selection changed scroll position");
+    assert(view.state.day === selectedDay, "calendar day did not update");
+    assert(document.activeElement.dataset.day === selectedDay, "calendar day lost keyboard focus");
+
+    while (!root.querySelector(".mpa-previous-month").disabled) {
+      before = scrollTo(".mpa-previous-month");
+      root.querySelector(".mpa-previous-month").focus({ preventScroll: true });
+      root.querySelector(".mpa-previous-month").click();
+      sameScroll(before, "calendar boundary navigation changed scroll position");
+    }
+    assert(document.activeElement.matches(".mpa-next-month"), "focus did not move to an available calendar control");
+
+    before = scrollTo(".mpa-day-select");
+    const daySelect = root.querySelector(".mpa-day-select");
+    const anotherDay = Array.from(daySelect.options).find((option) => option.value !== daySelect.value).value;
+    selectValue(".mpa-day-select", anotherDay);
+    sameScroll(before, "day selection changed scroll position");
+    assert(view.state.day === anotherDay, "day selection did not update");
+
+    before = scrollTo(".mpa-previous-month");
+    view.draw();
+    sameScroll(before, "background redraw changed scroll position");
+
+    // A new range loads a much shorter cloud after the user has scrolled down.
+    // The visible calendar should stay in place when that asynchronous data arrives.
+    selectValue(".mpa-range", "90");
+    scrollTo(".mpa-previous-month");
+    const calendarTop = root.querySelector(".mpa-history-lower").getBoundingClientRect().top;
+    await delay(300);
+    near(root.querySelector(".mpa-history-lower").getBoundingClientRect().top, calendarTop, "delayed cloud moved the calendar");
+    assert(root.querySelectorAll(".mpa-history-vocabulary .mpa-cloud li").length === 3, "new range did not receive its cloud");
+
+    // A slower result from an abandoned range must not overwrite a newer draw.
+    selectValue(".mpa-range", "30");
+    selectValue(".mpa-range", "0");
+    await delay(300);
+    assert(view.state.range === 0, "latest range was not retained");
+    assert(root.querySelectorAll(".mpa-history-vocabulary .mpa-cloud li").length === 40, "stale cloud overwrote the current range");
+    document.querySelector("#result").textContent = "PASS: scroll, selection, focus, delayed content, and stale requests";
+  })().catch((error) => { document.querySelector("#result").textContent = `FAIL: ${error.stack || error}`; });
+</script>

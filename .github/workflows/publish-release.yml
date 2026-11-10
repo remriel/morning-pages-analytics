@@ -25,6 +25,8 @@ jobs:
           node-version: 22
 
       - name: Test and build plugin
+        env:
+          MPA_REQUIRE_BROWSER: "1"
         run: |
           node --test
           node scripts/build.cjs

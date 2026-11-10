@@ -339,11 +339,12 @@ function adjacentMonth(date, offset) {
 
 function renderCalendar(root, state, days, pickDay, setMonth, period) {
   const header = el(root, "div", "mpa-calendar-header");
+  header.tabIndex = -1;
   const previous = adjacentMonth(state.month, -1);
   const next = adjacentMonth(state.month, 1);
-  button(header, "Previous", () => setMonth(previous)).disabled = previous < monthStart(period.start);
+  button(header, "Previous", () => setMonth(previous, ".mpa-previous-month"), "mpa-previous-month").disabled = previous < monthStart(period.start);
   el(header, "strong", "", displayDate(state.month, monthLabel));
-  button(header, "Next", () => setMonth(next)).disabled = next > monthStart(period.end);
+  button(header, "Next", () => setMonth(next, ".mpa-next-month"), "mpa-next-month").disabled = next > monthStart(period.end);
   const grid = el(root, "div", "mpa-calendar");
   for (const weekday of ["M", "T", "W", "T", "F", "S", "S"]) el(grid, "span", "mpa-weekday", weekday);
   const start = ordinal(state.month);
@@ -407,6 +408,10 @@ function addComparison(parent, summary, previous, today) {
 }
 
 function renderHistory(root, input, state, actions) {
+  // Keep the existing cloud when the date range is unchanged. Besides avoiding
+  // flicker, this keeps its height stable while its async data is requested.
+  const previousCloud = root.querySelector(".mpa-history-vocabulary");
+  const previousCloudHeight = previousCloud?.getBoundingClientRect().height ?? 0;
   root.replaceChildren();
   root.classList.add("mpa-view", "mpa-history");
   const disposers = [];
@@ -472,17 +477,26 @@ function renderHistory(root, input, state, actions) {
   el(root, "h3", "mpa-section-title", "Selected range breakdown");
   renderBreakdowns(root, summary);
   const words = card(root, "Word cloud", "Keyword counts across the selected range. Larger words appear more often.");
-  const cloud = el(words, "div");
-  el(cloud, "p", "mpa-caption", "Collecting keywords…");
+  const cloudKey = `${period.start}/${period.end}|${previous ? `${previous.start}/${previous.end}` : ""}`;
+  let cloud;
+  if (previousCloud?.dataset.periodKey === cloudKey) {
+    cloud = previousCloud;
+    words.append(cloud);
+  } else {
+    cloud = el(words, "div", "mpa-history-vocabulary");
+    cloud.dataset.periodKey = cloudKey;
+    if (previousCloudHeight) cloud.style.minHeight = `${previousCloudHeight}px`;
+    el(cloud, "p", "mpa-caption", "Collecting keywords…");
+  }
   actions.words(period, previous, cloud);
 
-  const lower = el(root, "div", "mpa-history-grid");
+  const lower = el(root, "div", "mpa-history-grid mpa-history-lower");
   const dated = new Map(period.days.map((day) => [day.date, day]));
   const day = dated.get(state.day) ?? period.days.at(-1);
   state.day = day.date;
   if (!state.month || state.month < monthStart(period.start) || state.month > monthStart(period.end)) state.month = monthStart(day.date);
   const activity = card(lower, "Activity calendar", "Select a day to inspect its daily notes.");
-  renderCalendar(activity, state, dated, (date) => actions.change({ day: date }, `[data-day="${date}"]`), (month) => actions.change({ month }), period);
+  renderCalendar(activity, state, dated, (date) => actions.change({ day: date }, `[data-day="${date}"]`), (month, selector) => actions.change({ month }, selector), period);
 
   const detail = card(lower, "Day detail");
   const detailField = el(detail, "label", "mpa-field", "Inspect day");

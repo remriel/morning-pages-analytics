@@ -36,6 +36,8 @@ npm run build
 npm test
 ```
 
+The tests include a dashboard scroll regression in Chrome or Chromium when available. Release checks require a browser so that the dashboard is tested with real layout and scrolling.
+
 To install from the ZIP, extract its `morning-pages-analytics` folder into `.obsidian/plugins` in your vault. You can also copy the three release files into that folder. Restart Obsidian, enable **Morning Pages Analytics** in Community plugins, and run **Open writing history** from the command palette.
 
 [Releases](https://github.com/remriel/morning-pages-analytics/releases)

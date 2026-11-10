@@ -1,5 +1,17 @@
 # Project State
 
+## 2026-11-09: dashboard scroll fix for 0.4.2
+
+- The 0.4.1 history view rebuilt its entire DOM on each selection, resetting its scroll position. The asynchronous word cloud could also shift the calendar later.
+- `WritingHistoryView.draw` in `src/plugin.js` saves and restores the scroll position for all history redraws. Calendar controls restore keyboard focus, including at a month boundary.
+- `src/dashboard.js` reuses the existing cloud when the range is unchanged and reserves its height while a new range loads. `showWords` anchors the lower section when cloud height changes, based on the user's current position. A draw generation rejects stale async results.
+- `test/dashboard-scroll.test.cjs` and `test/fixtures/dashboard-scroll.html` exercise the real dashboard in desktop and narrow Chrome layouts, including selects, calendar navigation, day selection, redraws, delayed content, and stale requests. The test skips without a browser locally; release CI requires one via `MPA_REQUIRE_BROWSER=1`.
+- The regression test fails against 0.4.1 (a signal change moved scroll position from 357 to 0) and passes against the fix. All six tests and build/syntax checks passed on Windows.
+- Version 0.4.2 is installed and enabled in the Remy vault. Native Obsidian testing retained position across a signal change and previous-month navigation, retained calendar focus, and reported no captured errors. Note content was not recorded.
+- The older checkout at `C:\Users\Gev\work\morning-pages-analytics` has unrelated uncommitted work. The 0.4.2 fix was prepared in a separate worktree.
+- Shared AI Brain was unavailable at both configured paths. Do not infer that memory was loaded or saved.
+- Release publication is in progress; consult `docs/PROGRESS.md` and verify GitHub before assuming 0.4.2 was published.
+
 ## Objective
 
 Deliver **Morning Pages Analytics 0.4.1**, a standalone MIT licensed Obsidian plugin for local writing analysis and automatic Daily Notes history.
@@ -41,4 +53,4 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 
 ## RESUME HERE
 
-0.4.1 is published and installed. Use **Open writing history** to browse indexed daily notes. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
+0.4.2 is installed and the scroll regression is fixed and tested. Publish the matching GitHub release, verify its assets and the release workflow, then update this handoff. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
