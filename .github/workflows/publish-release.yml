@@ -69,11 +69,11 @@ jobs:
 
           Examples shown here use synthetic writing. The language charts count English word cues and are most useful for exploring patterns across notes.
 
-          ![Writing stats view](https://raw.githubusercontent.com/remriel/morning-pages-analytics/${VERSION}/assets/screenshots/writing-stats.png)
+          ![Writing stats view](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/screenshots/writing-stats.png)
 
-          ![Daily writing history](https://raw.githubusercontent.com/remriel/morning-pages-analytics/${VERSION}/assets/screenshots/writing-history.png)
+          ![Daily writing history](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/screenshots/writing-history.png)
 
-          ![Morning Pages Analytics banner](https://raw.githubusercontent.com/remriel/morning-pages-analytics/${VERSION}/assets/github-banner.png)
+          ![Morning Pages Analytics banner](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/github-banner.png)
 
           Released under the [MIT License](https://github.com/remriel/morning-pages-analytics/releases/download/${VERSION}/LICENSE).
           EOF
