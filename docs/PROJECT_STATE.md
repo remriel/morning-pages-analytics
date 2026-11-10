@@ -1,5 +1,18 @@
 # Project State
 
+## 2026-11-10: creation-date folder history and settings (0.4.6)
+
+- User clarified that additional folders must accept arbitrary filenames and use creation timestamps for calendar placement. Modification timestamps must never determine history dates. Daily Notes remain the default, matched by filename date; that matching takes precedence for overlapping folders.
+- `includedDate` uses local calendar dates from Obsidian `file.stat.ctime` for Markdown files in additional folders. Missing/invalid creation times are skipped, with no modification-time fallback. Templates are excluded. Same-day order uses creation time.
+- Cache schema 3 rebuilds the previous index and persists creation timestamps. Existing folder settings migrate. Modification times only invalidate analysis content, so ordinary edits do not move entries between days.
+- Settings provide Daily Notes format override, include subfolders, default range, and creation-time order. Added-folder edits automatically refresh after 450 ms; settings save immediately to avoid losing a pending edit on unload.
+- Eleven tests pass, including a plugin runtime test of migration, indexing arbitrary names, edit date stability, format override, subfolder filtering, and folder removal. Browser scroll checks, build, and syntax check pass. Native Obsidian settings UI remains unverified.
+- Filesystem creation dates can be reset by copy/sync operations; original authored dates cannot be reconstructed from filenames with arbitrary names. Do not claim original creation-date recovery.
+
+## RESUME HERE (0.4.6)
+
+Publish 0.4.6 and verify CI and assets. The user explicitly authorized publication. Native settings interaction remains an optional follow-up.
+
 ## 2026-11-10: timestamp ordering and folder refresh for 0.4.5
 
 - `src/history.js` sorts each day's note entries by modification timestamp descending, with path as a stable tie break. Calendar days still use filename dates in chronological order.

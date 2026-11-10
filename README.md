@@ -21,9 +21,9 @@ Words added per minute is shown only when the stats pane observes enough editing
 
 The plugin reads the configured Daily Notes folder and date format. On startup it backfills matching notes, then updates its local index when notes are saved, created, renamed, or deleted. **Refresh daily history** rereads the Daily Notes configuration.
 
-To include more folders, open **Settings → Morning Pages Analytics → Additional writing folders** and select **Add folder** for each vault-relative path, such as `Journal/Morning Pages`. Use **Remove** to stop tracking a folder. Notes there use the Daily Notes filename date format. Daily Notes remain included.
+To include more folders, open **Settings → Morning Pages Analytics → Additional writing folders** and select **Add folder** for each vault-relative path, such as `Journal/Morning Pages`. Use **Remove** to stop tracking a folder. Markdown notes there can have any filename: history uses the file's creation date in local time. Daily Notes remain included by their filename dates, even if folders overlap. The configured Daily Notes template is excluded.
 
-Folder changes refresh writing history automatically after typing settles. Nested subfolders are included, and notes within each day's detail are ordered by modification time, newest first.
+Folder changes refresh writing history automatically after typing settles. Editing a note updates its analysis without moving its creation date. Nested subfolders are included by default. Settings also provide a Daily Notes filename format override (blank inherits Obsidian's format), an include-subfolders toggle, a default history range, and newest/oldest creation-time order within a day. Notes without valid creation timestamps are skipped rather than assigned a modification date. File copying or sync tools can reset filesystem creation timestamps; these dates reflect the timestamps reported by Obsidian, not reconstructed original dates.
 
 **Open writing history** shows 7, 30, 90, 365, All, and custom date ranges. The dashboard includes word totals, writing and goal streaks, tone and topic trends, language composition, a date calendar, day-by-day entry inspection, and a word cloud with exact word-frequency counts. Finite ranges can be compared with the preceding period.
 

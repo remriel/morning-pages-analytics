@@ -432,7 +432,7 @@ function renderHistory(root, input, state, actions) {
   refresh.disabled = input.loading;
   const days = groupDays(input.entries);
   if (!days.length) {
-    card(root, input.loading ? "Building your history" : "No daily notes indexed", input.status || "Create a Daily Note or check its folder and date format in Obsidian settings.");
+    card(root, input.loading ? "Building your history" : "No notes indexed", input.status || "Create a Daily Note or add a writing folder in the plugin settings. Additional folders use note creation dates.");
     return () => {};
   }
   if (state.range === "custom") {
@@ -453,7 +453,7 @@ function renderHistory(root, input, state, actions) {
   const streaks = summarizeDays(days, input.today);
   const notesInRange = period.days.reduce((sum, day) => sum + day.entries.length, 0);
   metrics(root, [
-    ["Words in range", summary.words], ["Daily notes", notesInRange], ["Writing days", summary.writingDays],
+    ["Words in range", summary.words], ["Notes", notesInRange], ["Writing days", summary.writingDays],
     ["Words per writing day", summary.writingDays ? summary.words / summary.writingDays : 0],
     ["Goal completion", period.days.length ? `${number.format(100 * summary.goalDays / period.days.length)}%` : "—"],
     ["Current goal streak", `${streaks.current} days`], ["Longest goal streak", `${streaks.best} days`],
@@ -495,7 +495,7 @@ function renderHistory(root, input, state, actions) {
   const day = dated.get(state.day) ?? period.days.at(-1);
   state.day = day.date;
   if (!state.month || state.month < monthStart(period.start) || state.month > monthStart(period.end)) state.month = monthStart(day.date);
-  const activity = card(lower, "Activity calendar", "Select a day to inspect its daily notes.");
+  const activity = card(lower, "Activity calendar", "Select a day to inspect its notes.");
   renderCalendar(activity, state, dated, (date) => actions.change({ day: date }, `[data-day="${date}"]`), (month, selector) => actions.change({ month }, selector), period);
 
   const detail = card(lower, "Day detail");
@@ -506,7 +506,7 @@ function renderHistory(root, input, state, actions) {
   detailSelect.addEventListener("change", () => actions.change({ day: detailSelect.value, month: monthStart(detailSelect.value) }, "select.mpa-day-select"));
   metrics(detail, [["Words", day.words], ["Sentences", day.sentences], ["Positive cues", day.positive], ["Negative cues", day.negative]]);
   const notes = el(detail, "ul", "mpa-notes");
-  for (const entry of day.entries) {
+  for (const entry of input.noteOrder === "oldest" ? [...day.entries].reverse() : day.entries) {
     const row = el(notes, "li");
     button(row, entry.path.split("/").at(-1).replace(/\.md$/i, ""), () => actions.openNote(entry.path));
     el(row, "span", "mpa-caption", `${number.format(entry.words)} words`);

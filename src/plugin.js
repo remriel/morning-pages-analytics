@@ -45,6 +45,8 @@ class WritingHistoryView extends ItemView {
 
   async onOpen() {
     this.plugin.historyViews.add(this);
+    await this.plugin.ready;
+    this.state.range = this.plugin.preferences.defaultRange;
     this.draw();
   }
 
@@ -63,6 +65,7 @@ class WritingHistoryView extends ItemView {
       today: moment().format("YYYY-MM-DD"),
       loading: Boolean(this.plugin.refreshing),
       status: this.plugin.status,
+      noteOrder: this.plugin.preferences.noteOrder,
     }, this.state, {
       refresh: () => void this.plugin.refreshHistory(true),
       words: (period, previous, target) => void this.showWords(period, previous, target, drawVersion),
@@ -110,8 +113,37 @@ class MorningPagesSettingsTab extends PluginSettingTab {
   constructor(app, plugin) { super(app, plugin); this.plugin = plugin; }
   display() {
     this.containerEl.empty();
+    new Setting(this.containerEl).setName("Daily Notes filename format")
+      .setDesc("Leave blank to use Obsidian's Daily Notes format. For example: YYYY-MM-DD or DD-MM-YYYY. This only affects Daily Notes; additional folders use creation dates.")
+      .addText((text) => text.setPlaceholder("Use Daily Notes settings").setValue(this.plugin.preferences.dateFormat).onChange((value) => {
+        this.plugin.preferences.dateFormat = value.trim();
+        this.plugin.scheduleFolderRefresh();
+      }));
+    new Setting(this.containerEl).setName("Include subfolders")
+      .setDesc("Track notes inside nested folders of the additional writing folders.")
+      .addToggle((toggle) => toggle.setValue(this.plugin.preferences.includeSubfolders).onChange(async (value) => {
+        this.plugin.preferences.includeSubfolders = value;
+        await this.plugin.applyFolderChange();
+      }));
+    new Setting(this.containerEl).setName("Default history range")
+      .setDesc("The date range shown when opening writing history.")
+      .addDropdown((dropdown) => dropdown.addOptions({ "7": "7 days", "30": "30 days", "90": "90 days", "365": "1 year", "0": "All dates" })
+        .setValue(String(this.plugin.preferences.defaultRange)).onChange(async (value) => {
+          this.plugin.preferences.defaultRange = Number(value);
+          await this.plugin.persist();
+          for (const view of this.plugin.historyViews) { view.state.range = Number(value); view.state.rangeChosen = true; view.state.day = null; view.state.month = null; }
+          this.plugin.drawHistory();
+        }));
+    new Setting(this.containerEl).setName("Note order within a day")
+      .setDesc("Sort by creation time. Editing a note does not change its position or date.")
+      .addDropdown((dropdown) => dropdown.addOptions({ newest: "Newest created first", oldest: "Oldest created first" })
+        .setValue(this.plugin.preferences.noteOrder).onChange(async (value) => {
+          this.plugin.preferences.noteOrder = value;
+          await this.plugin.persist();
+          this.plugin.drawHistory();
+        }));
     new Setting(this.containerEl).setName("Additional writing folders")
-      .setDesc("Include vault folders alongside Daily Notes. Notes use the Daily Notes date format; subfolders are included.")
+      .setDesc("Track notes with any filename by their creation date. Includes subfolders and refreshes automatically. Daily Notes keep their filename dates.")
       .addButton((button) => button.setButtonText("Add folder").onClick(async () => {
         await this.plugin.ready;
         this.plugin.customFolders.push("");
@@ -144,6 +176,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   live = {};
   daily = DEFAULT_DAILY;
   customFolders = [];
+  preferences = { dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" };
   folderTimer = null;
   activeFile = null;
   revision = 0;
@@ -152,7 +185,17 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   onload() {
     const { workspace, vault } = this.app;
-    this.ready = this.loadData().then((data) => { this.records = loadRecords(data); this.customFolders = normalizeFolders(data?.customFolders ?? data?.customFolder ?? []); }, () => {});
+    this.ready = this.loadData().then((data) => {
+      this.records = loadRecords(data);
+      this.customFolders = normalizeFolders(data?.customFolders ?? data?.customFolder ?? []);
+      const saved = data?.preferences || {};
+      this.preferences = {
+        dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
+        includeSubfolders: saved.includeSubfolders !== false,
+        defaultRange: [0, 7, 30, 90, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
+        noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
+      };
+    }, () => {});
     this.addSettingTab(new MorningPagesSettingsTab(this.app, this));
     this.registerView(STATS_VIEW, (leaf) => new WritingStatsView(leaf, this));
     this.registerView(HISTORY_VIEW, (leaf) => new WritingHistoryView(leaf, this));
@@ -173,7 +216,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
     this.registerEvent(vault.on("modify", (file) => {
       if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
-      if (includedDate(file, this.daily, this.customFolders, moment)) this.queue(file.path);
+      if (includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders)) this.queue(file.path);
     }));
     this.registerEvent(vault.on("delete", (file) => {
       if (file === this.activeFile) void this.inspect(null);
@@ -237,7 +280,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       const pace = session?.activeMs >= 3000 && session.current > session.start
         ? { minutes: session.activeMs / 60000, wordsPerMinute: (session.current - session.start) * 60000 / session.activeMs }
         : null;
-      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment), stats, pace };
+      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders), stats, pace };
     } catch {
       if (revision !== this.revision) return;
       this.live = { name: file.basename, message: "Could not read the open note." };
@@ -263,11 +306,10 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   async dailySettings() {
     const vault = this.app.vault;
     const configPath = `${vault.configDir}/daily-notes.json`;
-    if (!(await vault.adapter.exists(configPath))) return DEFAULT_DAILY;
-    const config = JSON.parse(await vault.adapter.read(configPath));
+    const config = await vault.adapter.exists(configPath) ? JSON.parse(await vault.adapter.read(configPath)) : DEFAULT_DAILY;
     const path = (value) => typeof value === "string" && value.trim().replace(/^\/+|\/+$/g, "") ? normalizePath(value.trim()) : "";
     const template = path(config?.template);
-    return { folder: path(config?.folder), format: config?.format?.trim() || DEFAULT_DAILY.format, template: template && !template.endsWith(".md") ? `${template}.md` : template };
+    return { folder: path(config?.folder), format: this.preferences.dateFormat || config?.format?.trim() || DEFAULT_DAILY.format, template: template && !template.endsWith(".md") ? `${template}.md` : template };
   }
 
   refreshHistory(force = false) {
@@ -287,6 +329,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   scheduleFolderRefresh() {
     clearTimeout(this.folderTimer);
+    void this.persist();
     this.folderTimer = setTimeout(() => void this.applyFolderChange(), 450);
   }
 
@@ -300,7 +343,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.flushing) await this.flushing;
     this.daily = await this.dailySettings();
-    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment)]).filter(([, date]) => date);
+    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders)]).filter(([, date]) => date);
     const eligible = new Set(candidates.map(([file]) => file.path));
     let changed = false;
     let failed = 0;
@@ -322,12 +365,12 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async indexFile(file, date, force) {
     const path = file.path;
-    const { mtime, size } = file.stat;
+    const { ctime, mtime, size } = file.stat;
     const before = this.records.get(path);
-    if (!force && before?.mtime === mtime && before.size === size && before.date === date) return false;
+    if (!force && before?.ctime === ctime && before.mtime === mtime && before.size === size && before.date === date) return false;
     const text = await this.app.vault.cachedRead(file);
     if (this.stopped || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
-    this.records.set(path, { path, date, mtime, size, ...recordStats(analyzeWriting(noteBody(text))) });
+    this.records.set(path, { path, date, ctime, mtime, size, ...recordStats(analyzeWriting(noteBody(text))) });
     return true;
   }
 
@@ -354,7 +397,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     const results = await Promise.allSettled(paths.map((path) => {
       const file = this.app.vault.getAbstractFileByPath(path);
-      const date = includedDate(file, this.daily, this.customFolders, moment);
+      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders);
       return date ? this.indexFile(file, date, true) : this.records.delete(path);
     }));
     if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
@@ -363,7 +406,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async persist() {
     this.vocabularyCache.clear();
-    const data = { version: CACHE_VERSION, customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    const data = { version: CACHE_VERSION, preferences: { ...this.preferences }, customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
       await this.writeTail;

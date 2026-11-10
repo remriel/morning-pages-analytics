@@ -1,6 +1,6 @@
 const { WORD_GOAL, GROUPS } = require("./analysis.js");
 const DAY = 86400000;
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const FIELDS = ["words", "unique", "paragraphs", "sentences", "positive", "negative"];
 const ordinal = (date) => Date.parse(`${date}T00:00:00Z`) / DAY;
 const isoDay = (day) => new Date(day * DAY).toISOString().slice(0, 10);
@@ -22,15 +22,16 @@ function normalizeFolders(folders) {
     .map((folder) => folder.trim().replace(/^\/+|\/+$/g, "")).filter(Boolean))];
 }
 
-function includedDate(file, daily, folders, moment) {
-  return dailyDate(file, daily, moment) || normalizeFolders(folders)
-    .map((folder) => {
-      const settings = { ...daily, folder };
-      const direct = dailyDate(file, settings, moment);
-      if (direct || !file?.path.startsWith(`${folder}/`)) return direct;
-      const basename = file.path.slice(file.path.lastIndexOf("/") + 1);
-      return dailyDate({ ...file, path: `${folder}/${basename}` }, settings, moment);
-    }).find(Boolean) || null;
+function includedDate(file, daily, folders, moment, includeSubfolders = true) {
+  const dailyDay = dailyDate(file, daily, moment);
+  if (dailyDay) return dailyDay;
+  if (file?.extension !== "md" || file.path === daily.template || !normalizeFolders(folders).some((folder) => file.path.startsWith(`${folder}/`) && (includeSubfolders || !file.path.slice(folder.length + 1).includes("/")))) return null;
+  const timestamp = file.stat?.ctime;
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return null;
+  const created = new Date(timestamp);
+  if (!Number.isFinite(created.getTime())) return null;
+  const day = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, "0")}-${String(created.getDate()).padStart(2, "0")}`;
+  return validDay(day) ? day : null;
 }
 
 function safeCount(value) {
@@ -51,7 +52,7 @@ function loadRecords(data) {
   if (data?.version !== CACHE_VERSION || !Array.isArray(data.entries)) return records;
   for (const entry of data.entries) {
     if (!entry || typeof entry.path !== "string" || !validDay(entry.date)) continue;
-    records.set(entry.path, { path: entry.path, date: entry.date, mtime: safeCount(entry.mtime), size: safeCount(entry.size), ...recordStats(entry) });
+    records.set(entry.path, { path: entry.path, date: entry.date, ctime: safeCount(entry.ctime), mtime: safeCount(entry.mtime), size: safeCount(entry.size), ...recordStats(entry) });
   }
   return records;
 }
@@ -71,7 +72,7 @@ function groupDays(entries) {
     day.entries.push(entry);
     addStats(day, entry);
   }
-  for (const day of days.values()) day.entries.sort((a, b) => (b.mtime || 0) - (a.mtime || 0) || (a.path || "").localeCompare(b.path || ""));
+  for (const day of days.values()) day.entries.sort((a, b) => (b.ctime || 0) - (a.ctime || 0) || (a.path || "").localeCompare(b.path || ""));
   return [...days.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 

@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — creation-date clarification
+
+1. **Least confidence:** Native settings UI on desktop/mobile. Runtime and browser tests pass; I would test settings in a disposable native vault next.
+2. **Biggest gap:** Creation timestamps can be reset by sync/copy tools. I would support an explicit frontmatter creation-date source if original imported dates need preservation.
+3. **Highest-impact assumption:** Obsidian filesystem creation time represents the intended creation date. The user explicitly rejected modification time; I would never fall back to it.
+
 ## 2026-11-10 — timestamp ordering and folder refresh
 
 1. **Least confidence:** Native Obsidian interaction for multiple folder rows. I would test adding/removing folders while history is open in a disposable vault.

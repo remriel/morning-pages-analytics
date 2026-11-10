@@ -6,7 +6,7 @@ const { CACHE_VERSION, dailyDate, includedDate, normalizeFolders, recordStats, g
 test("includes a custom folder alongside Daily Notes without matching sibling paths", () => {
   const settings = { folder: "Daily", format: "YYYY-MM-DD", template: "" };
   const moment = (value) => ({ isValid: () => /^2026-11-0[1-9]$/.test(value), format: () => value });
-  const date = (path, custom = "Morning") => includedDate({ path, extension: "md" }, settings, custom, moment);
+  const date = (path, custom = "Morning") => includedDate({ path, extension: "md", stat: { ctime: new Date(2026, 10, 5, 12).getTime() } }, settings, custom, moment);
   assert.equal(date("Daily/2026-11-05.md"), "2026-11-05");
   assert.equal(date("Morning/2026-11-05.md"), "2026-11-05");
   assert.equal(date("Morning Extra/2026-11-05.md"), null);
@@ -20,10 +20,25 @@ test("includes multiple folders and normalizes migrated settings", () => {
   assert.deepEqual(folders, ["Morning", "Journal"]);
   assert.deepEqual(normalizeFolders(" Morning/ "), ["Morning"]);
   for (const path of ["Daily/2026-11-05.md", "Morning/2026-11-05.md", "Journal/2026-11-05.md"]) {
-    assert.equal(includedDate({ path, extension: "md" }, settings, folders, moment), "2026-11-05");
+    assert.equal(includedDate({ path, extension: "md", stat: { ctime: new Date(2026, 10, 5, 12).getTime() } }, settings, folders, moment), "2026-11-05");
   }
-  assert.equal(includedDate({ path: "Journal Extra/2026-11-05.md", extension: "md" }, settings, folders, moment), null);
-  assert.equal(includedDate({ path: "Journal/2026/November/2026-11-05.md", extension: "md" }, settings, folders, moment), "2026-11-05");
+  assert.equal(includedDate({ path: "Journal Extra/2026-11-05.md", extension: "md", stat: { ctime: new Date(2026, 10, 5, 12).getTime() } }, settings, folders, moment), null);
+  assert.equal(includedDate({ path: "Journal/2026/November/2026-11-05.md", extension: "md", stat: { ctime: new Date(2026, 10, 5, 12).getTime() } }, settings, folders, moment), "2026-11-05");
+});
+
+test("additional folders use creation dates for any filename and do not move after editing", () => {
+  const settings = { folder: "Daily", format: "YYYY-MM-DD", template: "Journal/template.md" };
+  const moment = (value) => ({ isValid: () => /^2026-11-0[1-9]$/.test(value), format: () => value });
+  const file = { path: "Journal/nested/My thoughts.md", extension: "md", stat: { ctime: new Date(2026, 10, 3, 23, 59).getTime(), mtime: Date.now() } };
+  assert.equal(includedDate(file, settings, ["Journal"], moment), "2026-11-03");
+  file.stat.mtime += 86400000;
+  assert.equal(includedDate(file, settings, ["Journal"], moment), "2026-11-03");
+  assert.equal(includedDate(file, settings, ["Journal"], moment, false), null);
+  assert.equal(includedDate({ ...file, path: "Journal/2026-11-08.md" }, settings, ["Journal"], moment), "2026-11-03");
+  assert.equal(includedDate({ ...file, path: "Daily/2026-11-08.md" }, settings, ["Daily"], moment), "2026-11-08");
+  assert.equal(includedDate({ ...file, path: "Journal/template.md" }, settings, ["Journal"], moment), null);
+  assert.equal(includedDate({ ...file, stat: {} }, settings, ["Journal"], moment), null);
+  assert.equal(includedDate({ ...file, extension: "png" }, settings, ["Journal"], moment), null);
 });
 
 test("counts prose and matched language without counting code, link targets, or embeds", () => {
@@ -61,7 +76,7 @@ test("restricts Daily Notes matching to its configured folder, format, and templ
     assert.equal(strict, true);
     return { isValid: () => /^\d{4}\/\d{2}\/\d{4}-\d{2}-\d{2}$/.test(input), format: (pattern) => pattern === format ? input : input.split("/").at(-1) };
   };
-  const date = (path) => dailyDate({ path, extension: "md" }, settings, moment);
+  const date = (path) => dailyDate({ path, extension: "md", stat: { ctime: new Date(2026, 10, 5, 12).getTime() } }, settings, moment);
   assert.equal(date("Daily/2026/11/2026-11-05.md"), "2026-11-05");
   assert.equal(date("Daily/2026/02/2026-02-30.md"), null);
   assert.equal(date("Daily/2026/11/2026-11-04.md"), null);
@@ -85,11 +100,11 @@ test("history groups same-day notes, respects gaps, and preserves totals across 
   assert.deepEqual(previousWindow(days, custom).days.map(({ date }) => date), ["2026-10-30", "2026-11-01"]);
 });
 
-test("orders notes within each day by latest modification timestamp", () => {
+test("orders notes within each day by creation timestamp regardless of modification time", () => {
   const entries = [
-    { path: "Daily/first.md", date: "2026-11-05", mtime: 1, ...recordStats({ words: 2 }) },
-    { path: "Morning/second.md", date: "2026-11-05", mtime: 5, ...recordStats({ words: 3 }) },
-    { path: "Journal/third.md", date: "2026-11-05", mtime: 5, ...recordStats({ words: 4 }) },
+    { path: "Daily/first.md", date: "2026-11-05", ctime: 1, mtime: 99, ...recordStats({ words: 2 }) },
+    { path: "Morning/second.md", date: "2026-11-05", ctime: 5, mtime: 2, ...recordStats({ words: 3 }) },
+    { path: "Journal/third.md", date: "2026-11-05", ctime: 5, mtime: 1, ...recordStats({ words: 4 }) },
   ];
   const [day] = groupDays(entries);
   assert.deepEqual(day.entries.map((entry) => entry.path), ["Journal/third.md", "Morning/second.md", "Daily/first.md"]);

@@ -27,6 +27,7 @@
     const records = ["2026-08-03", "2026-09-05", "2026-10-04", "2026-10-20", "2026-11-02", "2026-11-09"].map(entry);
     const cache = new Map();
     const plugin = {
+      preferences: { noteOrder: "newest", defaultRange: 30 },
       records: new Map(records.map((record) => [record.path, record])),
       status: "",
       vocabulary(period) {
