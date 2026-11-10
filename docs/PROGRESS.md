@@ -2,15 +2,15 @@
 
 ## Current objective: publish timestamp ordering and automatic folder refresh in 0.4.5
 
-**Progress toward verified publication: 85%.** `[########--]`
+**Progress toward verified publication: 100%.** `[##########]`
 
 - [x] Order same-day notes by modification timestamp, newest first.
 - [x] Refresh history automatically after added-folder edits; debounce typing.
 - [x] Fix nested folder date matching.
 - [x] Nine local tests, build, and syntax check passed.
-- [ ] Publish 0.4.5 and verify CI and release assets.
+- [x] Publish 0.4.5; workflow 42901878803 passed and release assets include the installation ZIP and direct plugin files.
 
-Next: commit, push tag 0.4.5, and inspect the published release.
+Next optional check: use multiple folders in native Obsidian and confirm automatic refresh and same-day order.
 
 ## Current objective: release multiple writing folders in 0.4.4
 

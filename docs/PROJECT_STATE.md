@@ -5,11 +5,11 @@
 - `src/history.js` sorts each day's note entries by modification timestamp descending, with path as a stable tie break. Calendar days still use filename dates in chronological order.
 - Added folder changes now refresh automatically after a 450 ms typing pause; removing a folder refreshes immediately. This avoids a full index rebuild on each keystroke.
 - Fixed nested added-folder notes with ordinary dated basenames being skipped. Matching tries the full relative path first (for Daily Notes formats with subpaths), then the basename for nested notes.
-- Nine tests, build, and syntax check passed locally. Native Obsidian interaction remains unverified.
+- Nine tests, build, and syntax check passed locally. Release workflow 42901878803 passed and published the direct plugin files and installation ZIP at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.5. Native Obsidian interaction remains unverified.
 
 ## RESUME HERE (0.4.5)
 
-Publish and verify release 0.4.5. Check the setting with multiple folders in native Obsidian when available.
+0.4.5 is published and verified through local tests and release CI. Check the setting with multiple folders in native Obsidian when available.
 
 ## 2026-11-10: multiple writing folders for 0.4.4
 
