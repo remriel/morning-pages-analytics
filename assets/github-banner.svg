@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">Morning Pages Analytics for Obsidian</title>
+  <desc id="desc">A color-blocked visualization showing words, language cues, topics, and a mindset comparison through synthetic examples.</desc>
+  <rect width="1280" height="640" fill="#121119"/>
+  <path d="M0 0h22v640H0zM1258 0h22v640h-22z" fill="#ffdc55"/>
+  <path d="M61 59h36v36H61z" fill="#ffdc55"/>
+  <path d="M78 65v24m-8-12h16" stroke="#231b32" stroke-width="5"/>
+  <text x="111" y="84" fill="#fffaf0" font-family="Arial,sans-serif" font-size="20" font-weight="800" letter-spacing="2">MORNING PAGES ANALYTICS</text>
+  <text x="1215" y="82" fill="#c8c2d4" font-family="Arial,sans-serif" font-size="12" text-anchor="end" letter-spacing="2">OBSIDIAN PLUGIN · 0.4.1</text>
+  <text x="64" y="214" fill="#fffaf0" font-family="Arial,sans-serif" font-size="60" font-weight="900" letter-spacing="-3">Your writing</text>
+  <text x="64" y="283" fill="#ffdc55" font-family="Arial,sans-serif" font-size="60" font-weight="900" letter-spacing="-3">in full color.</text>
+  <text x="68" y="340" fill="#ded9e7" font-family="Arial,sans-serif" font-size="17">Live stats. Rich trends across every daily note.</text>
+  <rect x="64" y="385" width="266" height="53" rx="5" fill="#ffdc55"/>
+  <text x="83" y="419" fill="#231b32" font-family="Arial,sans-serif" font-size="17" font-weight="800">A 750-word writing goal</text>
+  <rect x="64" y="462" width="390" height="112" rx="7" fill="#1b1a25" stroke="#464252"/>
+  <text x="86" y="493" fill="#bfb9cb" font-family="Arial,sans-serif" font-size="13" letter-spacing="1">WORDS · SYNTHETIC EXAMPLE</text>
+  <path d="M92 546h326" stroke="#7c7488" stroke-width="1"/>
+  <path d="M92 523h326" stroke="#54dfb3" stroke-width="2" stroke-dasharray="6 5"/>
+  <rect x="114" y="527" width="30" height="19" rx="3" fill="#9877f8"/>
+  <rect x="167" y="516" width="30" height="30" rx="3" fill="#9877f8"/>
+  <rect x="220" y="500" width="30" height="46" rx="3" fill="#9877f8"/>
+  <rect x="273" y="530" width="30" height="16" rx="3" fill="#9877f8"/>
+  <rect x="326" y="516" width="30" height="30" rx="3" fill="#57d8c3"/>
+  <rect x="379" y="505" width="30" height="41" rx="3" fill="#ffdc55"/>
+  <rect x="506" y="153" width="696" height="420" rx="14" fill="#1b1a25" stroke="#464252"/>
+  <rect x="527" y="175" width="652" height="190" rx="10" fill="#231f30"/>
+  <text x="554" y="208" fill="#fffaf0" font-family="Arial,sans-serif" font-size="17" font-weight="700">Language cues over time</text>
+  <path d="M558 335h592m-592-54h592m-592-54h592" stroke="#464252" stroke-width="1"/>
+  <path d="m577 317 66-22 65 17 68-52 68 14 64-36 66 9 64-49 66 7 66-36" fill="none" stroke="#a587ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#a587ff"><circle cx="577" cy="317" r="5"/><circle cx="643" cy="295" r="5"/><circle cx="708" cy="312" r="5"/><circle cx="776" cy="260" r="5"/><circle cx="844" cy="274" r="5"/><circle cx="908" cy="238" r="5"/><circle cx="974" cy="247" r="5"/><circle cx="1038" cy="198" r="5"/><circle cx="1104" cy="205" r="5"/><circle cx="1170" cy="169" r="5"/></g>
+  <rect x="527" y="387" width="310" height="164" rx="10" fill="#221e2c"/>
+  <text x="550" y="418" fill="#fffaf0" font-family="Arial,sans-serif" font-size="17" font-weight="700">Feelings &amp; topics</text>
+  <rect x="552" y="445" width="242" height="11" rx="5" fill="#383343"/><rect x="552" y="445" width="172" height="11" rx="5" fill="#ff7979"/>
+  <rect x="552" y="469" width="242" height="11" rx="5" fill="#383343"/><rect x="552" y="469" width="209" height="11" rx="5" fill="#55d9b5"/>
+  <rect x="552" y="493" width="242" height="11" rx="5" fill="#383343"/><rect x="552" y="493" width="126" height="11" rx="5" fill="#ffbc55"/>
+  <rect x="552" y="517" width="242" height="11" rx="5" fill="#383343"/><rect x="552" y="517" width="92" height="11" rx="5" fill="#8e75f3"/>
+  <rect x="856" y="387" width="323" height="164" rx="10" fill="#221e2c"/>
+  <text x="880" y="418" fill="#fffaf0" font-family="Arial,sans-serif" font-size="17" font-weight="700">Mindset · 30 days</text>
+  <circle cx="944" cy="486" r="43" fill="none" stroke="#55d9b5" stroke-width="14" stroke-dasharray="76 24" transform="rotate(-90 944 486)"/>
+  <circle cx="944" cy="486" r="43" fill="none" stroke="#ff7979" stroke-width="14" stroke-dasharray="24 76" stroke-dashoffset="-76" transform="rotate(-90 944 486)"/>
+  <text x="1008" y="469" fill="#c8c2d4" font-family="Arial,sans-serif" font-size="13">Positive · 76%</text>
+  <text x="1008" y="496" fill="#c8c2d4" font-family="Arial,sans-serif" font-size="13">Negative · 24%</text>
+  <text x="1008" y="524" fill="#9877f8" font-family="Arial,sans-serif" font-size="13">Time · Topics · Senses</text>
+</svg>
