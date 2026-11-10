@@ -1,5 +1,18 @@
 # Progress
 
+## Current objective: publish custom folder option in 0.4.3
+
+**Progress toward a verified, published release: 75%.** `[########--]`
+
+- [x] Reconcile with the 0.4.2 source and preserve the older dirty checkout.
+- [x] Add a custom folder setting that includes matching dated notes alongside Daily Notes.
+- [x] Add date matching tests, update documentation and release copy.
+- [x] Run seven tests, build, and syntax check.
+- [ ] Publish 0.4.3 and verify GitHub release assets.
+- [ ] Verify the setting in native Obsidian if available.
+
+Next: rerun checks, commit and push, tag 0.4.3, inspect workflow and release assets, then update these docs with the result.
+
 ## Current objective: preserve dashboard position
 
 **Progress toward a verified, published fix: 100%.** `[##########]`

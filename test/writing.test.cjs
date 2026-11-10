@@ -1,7 +1,17 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { analyzeWriting, keywordCounts, rankKeywords } = require("../src/analysis.js");
-const { CACHE_VERSION, dailyDate, recordStats, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, loadRecords, combineKeywords } = require("../src/history.js");
+const { CACHE_VERSION, dailyDate, includedDate, recordStats, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, loadRecords, combineKeywords } = require("../src/history.js");
+
+test("includes a custom folder alongside Daily Notes without matching sibling paths", () => {
+  const settings = { folder: "Daily", format: "YYYY-MM-DD", template: "" };
+  const moment = (value) => ({ isValid: () => /^2026-11-0[1-9]$/.test(value), format: () => value });
+  const date = (path, custom = "Morning") => includedDate({ path, extension: "md" }, settings, custom, moment);
+  assert.equal(date("Daily/2026-11-05.md"), "2026-11-05");
+  assert.equal(date("Morning/2026-11-05.md"), "2026-11-05");
+  assert.equal(date("Morning Extra/2026-11-05.md"), null);
+  assert.equal(date("Morning/2026-11-05.md", ""), null);
+});
 
 test("counts prose and matched language without counting code, link targets, or embeds", () => {
   const stats = analyzeWriting("I feel grateful about [work](https://bad.test/project) and café.\n\nThe friend is sad. ![[Secret]]\n\n```js\nnegative anxious bad\n```\n`angry` <!-- tired -->");

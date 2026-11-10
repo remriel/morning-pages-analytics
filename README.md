@@ -21,6 +21,8 @@ Words added per minute is shown only when the stats pane observes enough editing
 
 The plugin reads the configured Daily Notes folder and date format. On startup it backfills matching notes, then updates its local index when notes are saved, created, renamed, or deleted. **Refresh daily history** rereads the Daily Notes configuration.
 
+To include another folder, open **Settings → Morning Pages Analytics → Additional writing folder** and enter its vault-relative path, such as `Journal/Morning Pages`. Notes there use the same filename date format as Daily Notes. Daily Notes remain included. Clear the field to return to Daily Notes only.
+
 **Open writing history** shows 7, 30, 90, 365, All, and custom date ranges. The dashboard includes word totals, writing and goal streaks, tone and topic trends, language composition, a date calendar, day-by-day entry inspection, and a word cloud with exact word-frequency counts. Finite ranges can be compared with the preceding period.
 
 ## Local data

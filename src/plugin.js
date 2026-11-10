@@ -1,6 +1,6 @@
-const { ItemView, MarkdownView, Plugin, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
+const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
 const { analyzeWriting, keywordCounts } = analysis;
-const { CACHE_VERSION, dailyDate, recordStats, loadRecords, combineKeywords } = history;
+const { CACHE_VERSION, includedDate, recordStats, loadRecords, combineKeywords } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
@@ -106,6 +106,25 @@ class WritingHistoryView extends ItemView {
   }
 }
 
+class MorningPagesSettingsTab extends PluginSettingTab {
+  constructor(app, plugin) { super(app, plugin); this.plugin = plugin; }
+  display() {
+    this.containerEl.empty();
+    new Setting(this.containerEl)
+      .setName("Additional writing folder")
+      .setDesc("Include a vault folder alongside Daily Notes, using the Daily Notes date format. Includes subfolders.")
+      .addText((text) => text.setPlaceholder("Journal/Morning Pages")
+        .setValue(this.plugin.customFolder)
+        .onChange(async (value) => {
+          await this.plugin.ready;
+          this.plugin.customFolder = value.trim().replace(/^\/+|\/+$/g, "");
+          await this.plugin.persist();
+          if (this.plugin.refreshing) await this.plugin.refreshing;
+          await this.plugin.refreshHistory();
+        }));
+  }
+}
+
 module.exports = class MorningPagesAnalytics extends Plugin {
   statsViews = new Set();
   historyViews = new Set();
@@ -114,6 +133,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   vocabularyCache = new Map();
   live = {};
   daily = DEFAULT_DAILY;
+  customFolder = "";
   activeFile = null;
   revision = 0;
   status = "";
@@ -121,7 +141,8 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   onload() {
     const { workspace, vault } = this.app;
-    this.ready = this.loadData().then((data) => { this.records = loadRecords(data); }, () => {});
+    this.ready = this.loadData().then((data) => { this.records = loadRecords(data); this.customFolder = data?.customFolder || ""; }, () => {});
+    this.addSettingTab(new MorningPagesSettingsTab(this.app, this));
     this.registerView(STATS_VIEW, (leaf) => new WritingStatsView(leaf, this));
     this.registerView(HISTORY_VIEW, (leaf) => new WritingHistoryView(leaf, this));
     this.addCommand({ id: "open-stats", name: "Open writing stats", callback: () => void this.openView(STATS_VIEW) });
@@ -141,7 +162,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
     this.registerEvent(vault.on("modify", (file) => {
       if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
-      if (dailyDate(file, this.daily, moment)) this.queue(file.path);
+      if (includedDate(file, this.daily, this.customFolder, moment)) this.queue(file.path);
     }));
     this.registerEvent(vault.on("delete", (file) => {
       if (file === this.activeFile) void this.inspect(null);
@@ -204,7 +225,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       const pace = session?.activeMs >= 3000 && session.current > session.start
         ? { minutes: session.activeMs / 60000, wordsPerMinute: (session.current - session.start) * 60000 / session.activeMs }
         : null;
-      this.live = { name: file.basename, date: dailyDate(file, this.daily, moment), stats, pace };
+      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolder, moment), stats, pace };
     } catch {
       if (revision !== this.revision) return;
       this.live = { name: file.basename, message: "Could not read the open note." };
@@ -256,7 +277,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.flushing) await this.flushing;
     this.daily = await this.dailySettings();
-    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, dailyDate(file, this.daily, moment)]).filter(([, date]) => date);
+    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolder, moment)]).filter(([, date]) => date);
     const eligible = new Set(candidates.map(([file]) => file.path));
     let changed = false;
     let failed = 0;
@@ -310,7 +331,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     const results = await Promise.allSettled(paths.map((path) => {
       const file = this.app.vault.getAbstractFileByPath(path);
-      const date = dailyDate(file, this.daily, moment);
+      const date = includedDate(file, this.daily, this.customFolder, moment);
       return date ? this.indexFile(file, date, true) : this.records.delete(path);
     }));
     if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
@@ -319,7 +340,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async persist() {
     this.vocabularyCache.clear();
-    const data = { version: CACHE_VERSION, entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    const data = { version: CACHE_VERSION, customFolder: this.customFolder, entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
       await this.writeTail;

@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — custom folder release
+
+1. **Least confidence:** Native Obsidian settings interaction. I would test changing and clearing the folder in a disposable vault and confirm the history counts.
+2. **Biggest gap:** The custom folder follows the Daily Notes filename date format. I would add a separate format setting if the user's other folder has a different naming convention.
+3. **Highest-impact assumption:** The request concerns writing history inclusion, not restricting the active note stats view. I would revisit the scope if the desired behavior differs.
+
 ## 2026-11-09 — history scroll fix
 
 1. **Least confident:** Native mobile Obsidian behavior. I verified a narrow browser layout but have not run the plugin on a mobile device; I would repeat the calendar and dropdown checks there.

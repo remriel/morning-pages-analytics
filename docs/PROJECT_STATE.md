@@ -1,5 +1,16 @@
 # Project State
 
+## 2026-11-10: additional writing folder for 0.4.3
+
+- Writing history now includes an optional vault-relative custom folder alongside the configured Daily Notes folder. Both use the Daily Notes filename date format; custom subfolders follow the format too.
+- `src/history.js` provides `includedDate`; `src/plugin.js` uses it for backfill, incremental updates, and the active note's history date. Plugin data persists `customFolder` with the existing numeric cache. Clearing the setting prunes custom records on rebuild.
+- The settings control saves changes and refreshes history. The 0.4.3 release is pending publication and native Obsidian verification.
+- The older checkout at `C:\Users\Gev\work\morning-pages-analytics` remains dirty and stale. Continue in this worktree.
+
+## RESUME HERE (0.4.3)
+
+Run build/tests, verify the custom folder in Obsidian if available, then commit, push, tag 0.4.3, and check the GitHub release workflow and assets.
+
 ## 2026-11-09: dashboard scroll fix for 0.4.2
 
 - The 0.4.1 history view rebuilt its entire DOM on each selection, resetting its scroll position. The asynchronous word cloud could also shift the calendar later.

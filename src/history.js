@@ -17,6 +17,10 @@ function dailyDate(file, settings, moment) {
   return validDay(day) ? day : null;
 }
 
+function includedDate(file, daily, customFolder, moment) {
+  return dailyDate(file, daily, moment) || (customFolder ? dailyDate(file, { ...daily, folder: customFolder }, moment) : null);
+}
+
 function safeCount(value) {
   return Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
@@ -113,4 +117,4 @@ function seriesBuckets(window) {
   return { first, last, step, buckets: [...buckets.values()] };
 }
 
-module.exports = { CACHE_VERSION, dailyDate, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };
+module.exports = { CACHE_VERSION, dailyDate, includedDate, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };
