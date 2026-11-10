@@ -1,5 +1,15 @@
 # Project State
 
+## 2026-11-10: per-folder date sources, 0.4.7
+
+- User needs imported Ledger journal entries dated by titles rather than filesystem import times. Each additional folder now offers creation timestamp or formatted filename, with optional format (blank inherits Daily Notes format).
+- `folderDateRules` persists rules keyed by normalized folder path. Existing folders default to creation mode; path edits carry their rule. Daily Notes keep precedence; the deepest matching additional folder wins. Filename mode never falls back to timestamps. Both relative-path formats and nested dated basenames are supported.
+- All indexing paths pass the rules; switching source refreshes and changes cached dates. Twelve tests pass, including switch/rebuild persistence, nested folders, overlapping rules, and invalid-title exclusion. Build, syntax and browser regression pass.
+
+## RESUME HERE (0.4.7)
+
+Publish 0.4.7 and verify CI/assets. Native settings UI remains unverified. For Ledger choose Formatted filename and supply its title format, or leave blank if it matches Daily Notes.
+
 ## 2026-11-10: creation-date folder history and settings (0.4.6)
 
 - User clarified that additional folders must accept arbitrary filenames and use creation timestamps for calendar placement. Modification timestamps must never determine history dates. Daily Notes remain the default, matched by filename date; that matching takes precedence for overlapping folders.

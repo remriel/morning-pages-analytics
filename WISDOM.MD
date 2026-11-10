@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — per-folder date source
+
+1. Least confident: native settings interaction; verify source switching in a disposable Obsidian vault.
+2. Biggest gap: imported journals need their title dates, since import timestamps can be identical. Explicit filename mode now handles this without timestamp fallback.
+3. Highest-impact assumption: Ledger titles share a consistent date format. If they vary, add deliberate multi-format support rather than guessing ambiguous dates.
+
 ## 2026-11-10 — creation-date clarification
 
 1. **Least confidence:** Native settings UI on desktop/mobile. Runtime and browser tests pass; I would test settings in a disposable native vault next.

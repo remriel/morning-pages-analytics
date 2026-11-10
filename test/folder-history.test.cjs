@@ -45,6 +45,16 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   plugin.preferences.includeSubfolders = true;
   await plugin.applyFolderChange();
   assert.equal(plugin.records.size, 1);
+  file.path = "Journal/2026-11-07.md";
+  plugin.preferences.dateFormat = "";
+  plugin.folderDateRules.Journal = { source: "filename", format: "YYYY-MM-DD" };
+  await plugin.applyFolderChange();
+  assert.equal(plugin.records.get(file.path).date, "2026-11-07");
+  assert.equal(plugin.saved.folderDateRules.Journal.source, "filename");
+  plugin.folderDateRules.Journal.source = "creation";
+  await plugin.applyFolderChange();
+  assert.equal(plugin.records.get(file.path).date, "2026-11-03");
+  plugin.preferences.dateFormat = "DD-MM-YYYY";
   plugin.customFolders = [];
   await plugin.applyFolderChange();
   assert.equal(plugin.records.size, 0);

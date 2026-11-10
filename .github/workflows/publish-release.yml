@@ -61,9 +61,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Track notes with any filename in additional folders by creation date. Editing a note updates its analysis without moving it to another day.
+          Choose formatted filenames or creation timestamps independently for each additional writing folder.
 
-          Daily Notes remain included by filename date. Additional folders use creation timestamps and refresh automatically. Settings now include a Daily Notes format override, subfolder inclusion, default history range, and newest/oldest creation-time ordering. Existing folder settings are preserved and history is rebuilt automatically.
+          Imported journals can use dates from their titles, with a per-folder format or the shared Daily Notes format. Arbitrarily titled notes can use creation dates. Changing the source automatically rebuilds history. Filename mode skips nonmatching titles without falling back to import timestamps. Existing folders keep their creation-date behavior until changed.
 
           Morning Pages Analytics is an open-source Obsidian plugin for local writing stats and automatic Daily Notes history.
 

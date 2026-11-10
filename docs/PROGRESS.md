@@ -1,5 +1,16 @@
 # Progress
 
+## Current objective: per-folder date source, 0.4.7
+
+**Progress: 90%.** `[#########-]`
+
+- [x] Per-folder source and filename-format settings, persisted with backwards-compatible defaults.
+- [x] Automatic history reorganization when switching sources.
+- [x] Twelve tests, browser regression, build and syntax checks passed.
+- [ ] Publish 0.4.7 and verify CI and assets.
+
+Next: push release tag and confirm publication.
+
 ## Current objective: creation-date folder history and practical settings, 0.4.6
 
 **Progress: 100%.** `[##########]`

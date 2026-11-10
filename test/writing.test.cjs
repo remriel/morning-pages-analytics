@@ -41,6 +41,19 @@ test("additional folders use creation dates for any filename and do not move aft
   assert.equal(includedDate({ ...file, extension: "png" }, settings, ["Journal"], moment), null);
 });
 
+test("folder filename mode ignores imported creation dates and never falls back on invalid titles", () => {
+  const daily = { folder: "Daily", format: "YYYY-MM-DD", template: "" };
+  const moment = (value, format) => ({ isValid: () => format === "YYYY-MM-DD" && /^2026-11-0[1-9]$/.test(value), format: () => value });
+  const file = (path) => ({ path, extension: "md", stat: { ctime: new Date(2026, 10, 9, 12).getTime() } });
+  const rules = { Ledger: { source: "filename", format: "YYYY-MM-DD" }, "Ledger/Freeform": { source: "creation" } };
+  const date = (path) => includedDate(file(path), daily, ["Ledger", "Ledger/Freeform", "Thoughts"], moment, true, rules);
+  assert.equal(date("Ledger/2026-11-02.md"), "2026-11-02");
+  assert.equal(date("Ledger/Archive/2026-11-03.md"), "2026-11-03");
+  assert.equal(date("Ledger/My thoughts.md"), null);
+  assert.equal(date("Ledger/Freeform/My thoughts.md"), "2026-11-09");
+  assert.equal(date("Thoughts/My thoughts.md"), "2026-11-09");
+});
+
 test("counts prose and matched language without counting code, link targets, or embeds", () => {
   const stats = analyzeWriting("I feel grateful about [work](https://bad.test/project) and café.\n\nThe friend is sad. ![[Secret]]\n\n```js\nnegative anxious bad\n```\n`angry` <!-- tired -->");
   assert.equal(stats.words, 11);

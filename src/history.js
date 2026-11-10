@@ -22,10 +22,17 @@ function normalizeFolders(folders) {
     .map((folder) => folder.trim().replace(/^\/+|\/+$/g, "")).filter(Boolean))];
 }
 
-function includedDate(file, daily, folders, moment, includeSubfolders = true) {
+function includedDate(file, daily, folders, moment, includeSubfolders = true, folderDateRules = {}) {
   const dailyDay = dailyDate(file, daily, moment);
   if (dailyDay) return dailyDay;
-  if (file?.extension !== "md" || file.path === daily.template || !normalizeFolders(folders).some((folder) => file.path.startsWith(`${folder}/`) && (includeSubfolders || !file.path.slice(folder.length + 1).includes("/")))) return null;
+  if (file?.extension !== "md" || file.path === daily.template) return null;
+  const folder = normalizeFolders(folders).filter((folder) => file.path.startsWith(`${folder}/`) && (includeSubfolders || !file.path.slice(folder.length + 1).includes("/"))).sort((a, b) => b.length - a.length)[0];
+  if (!folder) return null;
+  const rule = folderDateRules[folder];
+  if (rule?.source === "filename") {
+    const settings = { ...daily, folder, format: rule.format?.trim() || daily.format };
+    return dailyDate(file, settings, moment) || dailyDate({ path: `${folder}/${file.path.split("/").at(-1)}`, extension: file.extension }, settings, moment);
+  }
   const timestamp = file.stat?.ctime;
   if (!Number.isFinite(timestamp) || timestamp <= 0) return null;
   const created = new Date(timestamp);

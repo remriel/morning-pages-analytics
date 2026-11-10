@@ -143,19 +143,25 @@ class MorningPagesSettingsTab extends PluginSettingTab {
           this.plugin.drawHistory();
         }));
     new Setting(this.containerEl).setName("Additional writing folders")
-      .setDesc("Track notes with any filename by their creation date. Includes subfolders and refreshes automatically. Daily Notes keep their filename dates.")
+      .setDesc("Choose a date source for each folder. Formatted filenames suit imported journals; creation timestamps suit notes with arbitrary titles. Changes refresh history automatically.")
       .addButton((button) => button.setButtonText("Add folder").onClick(async () => {
         await this.plugin.ready;
         this.plugin.customFolders.push("");
         this.display();
       }));
     this.plugin.customFolders.forEach((folder, index) => {
+      const folderKey = () => normalizeFolders([this.plugin.customFolders[index]])[0] || "";
+      const rule = this.plugin.folderDateRules[folderKey()] || { source: "creation", format: "" };
       new Setting(this.containerEl).setName(`Folder ${index + 1}`)
-        .addText((text) => text.setPlaceholder("Journal/Morning Pages").setValue(folder).onChange(async (value) => {
+        .addText((text) => {
+          text.setPlaceholder("Journal/Morning Pages").setValue(folder).onChange(async (value) => {
           await this.plugin.ready;
+          const previousRule = this.plugin.folderDateRules[folderKey()];
           this.plugin.customFolders[index] = value;
+          if (previousRule && folderKey()) this.plugin.folderDateRules[folderKey()] = { ...previousRule };
           this.plugin.scheduleFolderRefresh();
-        }))
+          });
+        })
         .addButton((button) => button.setButtonText("Remove").onClick(async () => {
           await this.plugin.ready;
           clearTimeout(this.plugin.folderTimer);
@@ -163,6 +169,22 @@ class MorningPagesSettingsTab extends PluginSettingTab {
           await this.plugin.applyFolderChange();
           this.display();
         }));
+      {
+        new Setting(this.containerEl).setName(`Folder ${index + 1} date source`)
+          .setDesc("Determines the calendar day. Filename mode never falls back to creation or modification time.")
+          .addDropdown((dropdown) => dropdown.addOptions({ creation: "Creation timestamp", filename: "Formatted filename" })
+            .setValue(rule.source).onChange(async (source) => {
+              this.plugin.folderDateRules[folderKey()] = { ...this.plugin.folderDateRules[folderKey()], source };
+              await this.plugin.applyFolderChange();
+              this.display();
+            }));
+        if (rule.source === "filename") new Setting(this.containerEl).setName(`Folder ${index + 1} filename format`)
+          .setDesc("For example YYYY-MM-DD or DD-MM-YYYY. Leave blank to use the Daily Notes format. Nonmatching titles are skipped.")
+          .addText((text) => text.setPlaceholder("Use Daily Notes format").setValue(rule.format || "").onChange((format) => {
+            this.plugin.folderDateRules[folderKey()] = { source: "filename", format: format.trim() };
+            this.plugin.scheduleFolderRefresh();
+          }));
+      }
     });
   }
 }
@@ -176,6 +198,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   live = {};
   daily = DEFAULT_DAILY;
   customFolders = [];
+  folderDateRules = {};
   preferences = { dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" };
   folderTimer = null;
   activeFile = null;
@@ -188,6 +211,10 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.ready = this.loadData().then((data) => {
       this.records = loadRecords(data);
       this.customFolders = normalizeFolders(data?.customFolders ?? data?.customFolder ?? []);
+      this.folderDateRules = Object.fromEntries(this.customFolders.map((folder) => {
+        const rule = data?.folderDateRules?.[folder];
+        return [folder, { source: rule?.source === "filename" ? "filename" : "creation", format: typeof rule?.format === "string" ? rule.format.trim() : "" }];
+      }));
       const saved = data?.preferences || {};
       this.preferences = {
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
@@ -216,7 +243,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
     this.registerEvent(vault.on("modify", (file) => {
       if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
-      if (includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders)) this.queue(file.path);
+      if (includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules)) this.queue(file.path);
     }));
     this.registerEvent(vault.on("delete", (file) => {
       if (file === this.activeFile) void this.inspect(null);
@@ -280,7 +307,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       const pace = session?.activeMs >= 3000 && session.current > session.start
         ? { minutes: session.activeMs / 60000, wordsPerMinute: (session.current - session.start) * 60000 / session.activeMs }
         : null;
-      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders), stats, pace };
+      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules), stats, pace };
     } catch {
       if (revision !== this.revision) return;
       this.live = { name: file.basename, message: "Could not read the open note." };
@@ -343,7 +370,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.flushing) await this.flushing;
     this.daily = await this.dailySettings();
-    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders)]).filter(([, date]) => date);
+    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules)]).filter(([, date]) => date);
     const eligible = new Set(candidates.map(([file]) => file.path));
     let changed = false;
     let failed = 0;
@@ -397,7 +424,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     const results = await Promise.allSettled(paths.map((path) => {
       const file = this.app.vault.getAbstractFileByPath(path);
-      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders);
+      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules);
       return date ? this.indexFile(file, date, true) : this.records.delete(path);
     }));
     if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
@@ -406,7 +433,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async persist() {
     this.vocabularyCache.clear();
-    const data = { version: CACHE_VERSION, preferences: { ...this.preferences }, customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    const data = { version: CACHE_VERSION, preferences: { ...this.preferences }, folderDateRules: Object.fromEntries(normalizeFolders(this.customFolders).map((folder) => [folder, { ...this.folderDateRules[folder] }])), customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
       await this.writeTail;
