@@ -4,12 +4,12 @@
 
 - Writing history now includes an optional vault-relative custom folder alongside the configured Daily Notes folder. Both use the Daily Notes filename date format; custom subfolders follow the format too.
 - `src/history.js` provides `includedDate`; `src/plugin.js` uses it for backfill, incremental updates, and the active note's history date. Plugin data persists `customFolder` with the existing numeric cache. Clearing the setting prunes custom records on rebuild.
-- The settings control saves changes and refreshes history. The 0.4.3 release is pending publication and native Obsidian verification.
+- The settings control saves changes and refreshes history. Release 0.4.3 is published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.3. CI passed and the ZIP and direct plugin files are present. Native Obsidian interaction for this setting remains unverified.
 - The older checkout at `C:\Users\Gev\work\morning-pages-analytics` remains dirty and stale. Continue in this worktree.
 
 ## RESUME HERE (0.4.3)
 
-Run build/tests, verify the custom folder in Obsidian if available, then commit, push, tag 0.4.3, and check the GitHub release workflow and assets.
+The 0.4.3 release is published. Next verification opportunity: set and clear the custom folder in native Obsidian, and confirm matching dated notes appear and disappear from history.
 
 ## 2026-11-09: dashboard scroll fix for 0.4.2
 
