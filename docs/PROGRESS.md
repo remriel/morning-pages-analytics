@@ -2,16 +2,16 @@
 
 ## Current objective: creation-date folder history and practical settings, 0.4.6
 
-**Progress: 90%.** `[#########-]`
+**Progress: 100%.** `[##########]`
 
 - [x] Additional-folder notes accept any filename and use creation dates.
 - [x] Daily Notes remain included by filename date; editing other notes does not move their day.
 - [x] Add format override, subfolder toggle, default range, and creation-order settings.
 - [x] Migrate cache and preserve folder preferences.
 - [x] Eleven tests, browser regression, build, syntax check, and diff check passed.
-- [ ] Publish 0.4.6 and verify release CI and downloadable assets.
+- [x] Publish 0.4.6; workflow 42903207649 passed and all plugin files and installation ZIP are present.
 
-Next: commit, push main and 0.4.6 tag, then verify publication.
+Next optional check: exercise settings in native Obsidian. Publication is complete.
 
 ## Current objective: publish timestamp ordering and automatic folder refresh in 0.4.5
 

@@ -11,7 +11,7 @@
 
 ## RESUME HERE (0.4.6)
 
-Publish 0.4.6 and verify CI and assets. The user explicitly authorized publication. Native settings interaction remains an optional follow-up.
+0.4.6 is published: https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.6. Workflow 42903207649 passed; direct files and installation ZIP are present. Native settings interaction remains an optional follow-up.
 
 ## 2026-11-10: timestamp ordering and folder refresh for 0.4.5
 
