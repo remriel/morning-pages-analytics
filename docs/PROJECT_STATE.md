@@ -10,11 +10,11 @@
 - Version 0.4.2 is installed and enabled in the Remy vault. Native Obsidian testing retained position across a signal change and previous-month navigation, retained calendar focus, and reported no captured errors. Note content was not recorded.
 - The older checkout at `C:\Users\Gev\work\morning-pages-analytics` has unrelated uncommitted work. The 0.4.2 fix was prepared in a separate worktree.
 - Shared AI Brain was unavailable at both configured paths. Do not infer that memory was loaded or saved.
-- Release publication is in progress; consult `docs/PROGRESS.md` and verify GitHub before assuming 0.4.2 was published.
+- 0.4.2 is published; its GitHub Actions release workflow passed. The three installed Remy files and installation ZIP were verified against the release asset SHA-256 digests. The released files use LF line endings, so the downloaded release files were installed after verification.
 
 ## Objective
 
-Deliver **Morning Pages Analytics 0.4.1**, a standalone MIT licensed Obsidian plugin for local writing analysis and automatic Daily Notes history.
+Maintain **Morning Pages Analytics**, a standalone MIT licensed Obsidian plugin for local writing analysis and automatic Daily Notes history. The current release is 0.4.2.
 
 ## Current status
 
@@ -53,4 +53,4 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 
 ## RESUME HERE
 
-0.4.2 is installed and the scroll regression is fixed and tested. Publish the matching GitHub release, verify its assets and the release workflow, then update this handoff. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
+0.4.2 is installed in Remy and published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.2. The dashboard scroll fix passed browser and native desktop checks. Actual mobile Obsidian remains untested. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.

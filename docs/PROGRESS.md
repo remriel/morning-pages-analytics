@@ -2,18 +2,18 @@
 
 ## Current objective: preserve dashboard position
 
-**Progress toward a verified, published fix: 85%.** `[#########-]`
+**Progress toward a verified, published fix: 100%.** `[##########]`
 
 - [x] Reconcile the current source with the installed 0.4.1 release and preserve the older dirty checkout.
 - [x] Identify full dashboard redraw and asynchronous vocabulary rendering as causes of disruptive scrolling.
 - [x] Preserve scroll and keyboard focus on history updates, including delayed vocabulary rendering.
 - [x] Add regression coverage and verify interactions with synthetic data in desktop and narrow browser layouts.
 - [x] Install and verify the fixed build in Remy.
-- [ ] Publish and verify a new GitHub release.
+- [x] Publish and verify GitHub release 0.4.2.
 
-Current blocker: the shared AI Brain vault is unavailable at both configured paths. All six tests pass, including browser checks for desktop and narrow layouts; native Obsidian retained scroll position and calendar focus, with no captured errors. Next: publish 0.4.2, verify the workflow and release assets, and update these records.
+All six tests pass, including browser checks for desktop and narrow layouts; native Obsidian retained scroll position and calendar focus, with no captured errors. The release workflow passed, and the release files and ZIP matched GitHub's SHA-256 digests. Remy has the exact released files. The shared AI Brain vault was unavailable at both configured paths. Next: no required steps; optionally check the experience in mobile Obsidian.
 
-## Objective
+## Previous 0.4.1 objective
 
 Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plugin with local analysis and automatic Daily Notes history.
 
@@ -34,9 +34,9 @@ Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plug
 - [x] Publish the stable release and verify the four downloadable assets.
 - [x] Add stats and history screenshots, the GitHub banner, and the MIT license.
 
-## Current state
+## State at the 0.4.1 release
 
-0.4.1 is installed and is the latest stable GitHub release. [Release 0.4.1](https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.1)
+0.4.1 was installed and published as a stable GitHub release. [Release 0.4.1](https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.1)
 
 ## Verification
 
@@ -47,7 +47,7 @@ Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plug
 - Language signals count literal English word cues. They do not interpret context, negation, sarcasm, or other languages semantically.
 - Pace appears only when the open stats view observed enough editing activity to measure added words per minute.
 
-## Next steps
+## Historical next steps for 0.4.1
 
 1. Run **Open writing history** to browse indexed Daily Notes and selected ranges.
 2. For future releases, update the version, build the plugin, and push the tag matching the manifest version.
