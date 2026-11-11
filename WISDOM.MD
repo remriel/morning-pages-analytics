@@ -2,6 +2,8 @@
 
 ## 2026-11-10 — settings width, release 0.5.2
 
+Published 0.5.2; CI 42971601303 and asset/ZIP verification passed. All 22 tests passed.
+
 1. Least confident: the exact layout in the user's Obsidian theme and on physical mobile devices. The browser fixture passed with Obsidian 1.15.0's stylesheet, but the isolated native window was unavailable; I would inspect the released plugin in Obsidian next.
 2. Biggest gap: changing only the overall pane would still leave dropdown controls constrained within their rows. I widened the pane and gave every settings dropdown its own full-width row.
 3. Highest-impact assumption: the issue is in Morning Pages Analytics plugin settings, especially its category, history, and folder dropdowns. If another pane or a theme-specific override is involved, I would reproduce it with that exact theme and window size.

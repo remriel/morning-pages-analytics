@@ -9,7 +9,7 @@
 
 ## RESUME HERE (0.5.2)
 
-Implementation and local verification are complete. Publish the exact `0.5.2` tag using `.github/workflows/publish-release.yml`, check CI and downloaded release assets, and update this handoff. Do not claim a native Obsidian UI test.
+0.5.2 is published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.2. GitHub Actions 42971601303 passed its tests, build and release packaging. All nine downloaded asset digests and all four ZIP entries matched; plugin files match source/build with normalized line endings. No required work remains. If checking the user's exact theme or device, verify the released settings directly in Obsidian; native UI interaction has not yet been verified.
 
 ## 2026-11-10: editable base word lists and settings UI, 0.5.1
 

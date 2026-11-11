@@ -2,16 +2,16 @@
 
 ## Current objective: use the available settings width and publish 0.5.2
 
-**Progress toward verified publication: 75%.** `[########--]`
+**Progress toward verified publication: 100%.** `[##########]`
 
 - [x] Reproduce the fixed-width Obsidian pane and constrained dropdown controls in the browser fixture.
 - [x] Widen this plugin's desktop settings pane and give dropdowns full-width rows.
 - [x] Check every option's text fit and pane width across eight desktop, phone, dark and larger-text layouts.
 - [x] Pass 22 tests with Chrome required, build, bundle syntax and diff checks; repeat settings checks with the installed Obsidian 1.15.0 CSS.
-- [ ] Commit and push source and exact 0.5.2 tag; monitor the release workflow.
-- [ ] Verify release assets and update the handoff and shared project pointer.
+- [x] Push the source and exact 0.5.2 tag; workflow 42971601303 passed.
+- [x] Verify all nine release digests, four ZIP entries, and source/build content; update the handoff and shared project pointer.
 
-Native Obsidian interaction and mobile hardware remain unverified: a disposable isolated process started but its hidden window could not be targeted. Next: publish the tested commit, verify CI/assets, and record the outcome.
+Published: https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.2. Native Obsidian interaction and mobile hardware remain unverified: a disposable isolated process started but its hidden window could not be targeted. No required steps remain.
 
 ## Current objective: editable defaults, clearer settings and release 0.5.1
 
