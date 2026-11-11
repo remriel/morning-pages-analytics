@@ -1,5 +1,17 @@
 # Progress
 
+## Current objective: only the two requested Reddit features, 0.5.0
+
+**Progress: 100%.** `[##########]`
+
+- [x] Configurable daily goal across live tracker, history, calendar and streaks.
+- [x] Additive custom words for every category, retaining built-in lists.
+- [x] Local history recount and cache invalidation on word-list changes.
+- [x] npm test: 18 passed; npm run build and syntax checks passed.
+- [x] Version bumped to 0.5.0.
+
+Next: no implementation steps required. Native UI verification and publication are future steps; this task does not create a release tag.
+
 ## Current objective: automatic recognition and format presets, 0.4.8
 
 **Progress: 90%.** `[#########-]`

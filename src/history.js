@@ -1,4 +1,4 @@
-const { WORD_GOAL, GROUPS } = require("./analysis.js");
+const { getWordGoal, GROUPS } = require("./analysis.js");
 const DAY = 86400000;
 const CACHE_VERSION = 3;
 const DATE_FORMAT_PRESETS = [
@@ -82,7 +82,7 @@ function loadRecords(data) {
   if (data?.version !== CACHE_VERSION || !Array.isArray(data.entries)) return records;
   for (const entry of data.entries) {
     if (!entry || typeof entry.path !== "string" || !validDay(entry.date)) continue;
-    records.set(entry.path, { path: entry.path, date: entry.date, ctime: safeCount(entry.ctime), mtime: safeCount(entry.mtime), size: safeCount(entry.size), ...recordStats(entry) });
+    records.set(entry.path, { path: entry.path, date: entry.date, analysisKey: typeof entry.analysisKey === "string" ? entry.analysisKey : "", ctime: safeCount(entry.ctime), mtime: safeCount(entry.mtime), size: safeCount(entry.size), ...recordStats(entry) });
   }
   return records;
 }
@@ -136,7 +136,7 @@ function summarizeDays(days, today) {
   for (const day of days) {
     addStats(total, day);
     if (day.words > 0) writingDays++;
-    if (day.words < WORD_GOAL) continue;
+    if (day.words < getWordGoal()) continue;
     goalDays++;
     const current = ordinal(day.date);
     streak = current === previous + 1 ? streak + 1 : 1;

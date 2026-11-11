@@ -84,5 +84,14 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   await rows.find((row) => row.name === "Folder 1 date source").control.change("auto");
   assert.equal(plugin.saved.folderDateRules.Journal.source, "auto");
   assert.ok(rows.some((row) => row.name === "Automatic date recognition"));
+  plugin.folderDateRules.Journal = { source: "creation" };
+  await plugin.applyFolderChange();
+  assert.equal(plugin.records.get(file.path).topics.work, 0);
+  plugin.preferences.customWords = { topics: { work: "happy" } };
+  await plugin.applyAnalysisSettings();
+  assert.equal(plugin.records.get(file.path).topics.work, 1);
+  plugin.preferences.customWords = {};
+  await plugin.applyAnalysisSettings();
+  assert.equal(plugin.records.get(file.path).topics.work, 0);
   plugin.onunload();
 });

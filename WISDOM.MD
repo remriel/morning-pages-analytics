@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — configurable goal and category words
+
+1. Least confident: native settings layout with many category fields; test in Obsidian next.
+2. Biggest gap: custom words use exact token matching, not semantic interpretation or stemming. Include alternate word forms explicitly.
+3. Highest-impact assumption: a goal is a positive whole number and applies retrospectively to history. If users need historical goal schedules, that is a separate feature outside this request.
+
 ## 2026-11-10 — automatic multi-format dates
 
 1. Least confident: native settings layout with twelve toggles; I would inspect desktop/mobile layouts next. Callback behavior is tested.

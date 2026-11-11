@@ -1,5 +1,5 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
-const { analyzeWriting, keywordCounts } = analysis;
+const { analyzeWriting, keywordCounts, configureAnalysis, GROUPS } = analysis;
 const { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
@@ -113,6 +113,26 @@ class MorningPagesSettingsTab extends PluginSettingTab {
   constructor(app, plugin) { super(app, plugin); this.plugin = plugin; }
   display() {
     this.containerEl.empty();
+    new Setting(this.containerEl).setName("Daily word goal")
+      .setDesc("A positive whole number, such as 100, 300, 750, 1000 or 2000. Used by the live tracker, history and streaks.")
+      .addText((text) => text.setValue(String(this.plugin.preferences.wordGoal || 750)).onChange(async (value) => {
+        const goal = Number(value);
+        if (!/^\d+$/.test(value.trim()) || !Number.isSafeInteger(goal) || goal < 1) return;
+        this.plugin.preferences.wordGoal = goal;
+        await this.plugin.applyAnalysisSettings();
+      }));
+    for (const [name, categories] of Object.entries(GROUPS)) {
+      for (const { key, label } of categories) new Setting(this.containerEl).setName(`${label}: additional words`)
+        .setDesc(`${name}. Add words separated by spaces, commas or newlines. Built-in words stay enabled; matching ignores case. Word forms must be listed separately.`)
+        .addTextArea((text) => text.setValue(this.plugin.preferences.customWords?.[name]?.[key] || "").onChange((value) => {
+          this.plugin.preferences.customWords ||= {};
+          this.plugin.preferences.customWords[name] ||= {};
+          this.plugin.preferences.customWords[name][key] = value;
+          void this.plugin.persist();
+          clearTimeout(this.plugin.analysisTimer);
+          this.plugin.analysisTimer = setTimeout(() => void this.plugin.applyAnalysisSettings(), 450);
+        }));
+    }
     new Setting(this.containerEl).setName("Daily Notes filename format")
       .setDesc("Leave blank to use Obsidian's Daily Notes format. For example: YYYY-MM-DD or DD-MM-YYYY. This only affects Daily Notes; additional folders use creation dates.")
       .addText((text) => text.setPlaceholder("Use Daily Notes settings").setValue(this.plugin.preferences.dateFormat).onChange((value) => {
@@ -234,11 +254,14 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       }));
       const saved = data?.preferences || {};
       this.preferences = {
+        wordGoal: Number.isSafeInteger(saved.wordGoal) && saved.wordGoal > 0 ? saved.wordGoal : 750,
+        customWords: saved.customWords && typeof saved.customWords === "object" ? saved.customWords : {},
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
         includeSubfolders: saved.includeSubfolders !== false,
         defaultRange: [0, 7, 30, 90, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
         noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
       };
+      configureAnalysis(this.preferences.wordGoal, this.preferences.customWords);
     }, () => {});
     this.addSettingTab(new MorningPagesSettingsTab(this.app, this));
     this.registerView(STATS_VIEW, (leaf) => new WritingStatsView(leaf, this));
@@ -283,6 +306,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     clearTimeout(this.statsTimer);
     clearTimeout(this.historyTimer);
     clearTimeout(this.folderTimer);
+    clearTimeout(this.analysisTimer);
     for (const view of this.historyViews) view.disposeCharts();
   }
 
@@ -411,10 +435,11 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     const path = file.path;
     const { ctime, mtime, size } = file.stat;
     const before = this.records.get(path);
-    if (!force && before?.ctime === ctime && before.mtime === mtime && before.size === size && before.date === date) return false;
+    const analysisKey = JSON.stringify(this.preferences.customWords || {});
+    if (!force && before?.analysisKey === analysisKey && before?.ctime === ctime && before.mtime === mtime && before.size === size && before.date === date) return false;
     const text = await this.app.vault.cachedRead(file);
     if (this.stopped || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
-    this.records.set(path, { path, date, ctime, mtime, size, ...recordStats(analyzeWriting(noteBody(text))) });
+    this.records.set(path, { path, date, ctime, mtime, size, analysisKey, ...recordStats(analyzeWriting(noteBody(text), JSON.parse(analysisKey))) });
     return true;
   }
 
@@ -457,6 +482,17 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     } catch {
       this.status = "The history cache could not be saved. Refresh to retry.";
     }
+  }
+
+  async applyAnalysisSettings() {
+    await this.ready;
+    if (this.refreshing) await this.refreshing;
+    if (this.flushing) await this.flushing;
+    configureAnalysis(this.preferences.wordGoal, this.preferences.customWords);
+    await this.persist();
+    await this.refreshHistory();
+    if (this.activeFile) await this.inspect(this.activeFile);
+    for (const view of this.statsViews) view.draw();
   }
 
   vocabulary(period) {

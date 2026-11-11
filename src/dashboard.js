@@ -1,4 +1,4 @@
-const { WORD_GOAL, GROUPS, PAIRS, rankKeywords } = require("./analysis.js");
+const { getWordGoal, GROUPS, PAIRS, rankKeywords } = require("./analysis.js");
 const { ordinal, isoDay, validDay, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets } = require("./history.js");
 const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });
 const dateLabel = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -159,12 +159,12 @@ function renderStats(root, state, showHistory) {
   el(header, "p", "mpa-note-name", state.name || "Open a Markdown note to see your stats.");
   if (state.stats) {
     const { words } = state.stats;
-    el(header, "div", "mpa-count", `${number.format(words)} / ${WORD_GOAL}`);
+    el(header, "div", "mpa-count", `${number.format(words)} / ${getWordGoal()}`);
     const progress = el(header, "progress");
-    progress.max = WORD_GOAL;
-    progress.value = Math.min(words, WORD_GOAL);
+    progress.max = getWordGoal();
+    progress.value = Math.min(words, getWordGoal());
     progress.setAttribute("aria-label", "Writing goal progress");
-    el(header, "p", "mpa-goal-message", words >= WORD_GOAL ? "Goal reached" : `${WORD_GOAL - words} to the writing goal`);
+    el(header, "p", "mpa-goal-message", words >= getWordGoal() ? "Goal reached" : `${getWordGoal() - words} to the writing goal`);
   } else if (state.message) {
     el(header, "p", "mpa-goal-message", state.message);
   }
@@ -252,7 +252,7 @@ function drawChart(host, scale, options, width) {
       const value = series.value(row);
       if (value === null) continue;
       const mark = options.columns
-        ? svg(plot, "rect", { x: center(row) - columnWidth / 2, y: Math.min(bottom - 1, y(value)), width: columnWidth, height: Math.max(1, bottom - y(value)), class: `mpa-mark ${value >= WORD_GOAL && scale.step === 1 ? "is-goal" : series.color}` })
+        ? svg(plot, "rect", { x: center(row) - columnWidth / 2, y: Math.min(bottom - 1, y(value)), width: columnWidth, height: Math.max(1, bottom - y(value)), class: `mpa-mark ${value >= getWordGoal() && scale.step === 1 ? "is-goal" : series.color}` })
         : svg(plot, "circle", { cx: center(row), cy: y(value), r: 3, class: `mpa-mark ${series.color}` });
       svg(mark, "title", {}, `${labelPeriod(row)} · ${series.label} ${number.format(value)}${options.percentage ? "%" : ""}`);
     }
@@ -354,7 +354,7 @@ function renderCalendar(root, state, days, pickDay, setMonth, period) {
     const date = isoDay(day);
     const record = days.get(date);
     const words = record?.words ?? 0;
-    const level = words >= WORD_GOAL ? "is-goal" : words >= 250 ? "is-mid" : words > 0 ? "is-low" : "is-empty";
+    const level = words >= getWordGoal() ? "is-goal" : words >= Math.ceil(getWordGoal() / 3) ? "is-mid" : words > 0 ? "is-low" : "is-empty";
     const label = `${displayDate(date)} · ${record ? `${number.format(words)} words` : "No indexed note"}`;
     const cell = record ? button(grid, String(day - start + 1), () => pickDay(date), `mpa-day ${level}`) : el(grid, "span", `mpa-day ${level}`, String(day - start + 1));
     cell.title = label;
@@ -363,7 +363,12 @@ function renderCalendar(root, state, days, pickDay, setMonth, period) {
     cell.dataset.day = date;
   }
   const key = el(root, "div", "mpa-calendar-key");
-  for (const [level, label] of [["empty", "0"], ["low", "1–249"], ["mid", "250–749"], ["goal", "750+"]]) {
+  const middle = Math.ceil(getWordGoal() / 3);
+  const levels = [["empty", "0"]];
+  if (middle > 1) levels.push(["low", `1–${middle - 1}`]);
+  if (getWordGoal() > 1) levels.push(["mid", `${middle}–${getWordGoal() - 1}`]);
+  levels.push(["goal", `${getWordGoal()}+`]);
+  for (const [level, label] of levels) {
     el(key, "span", `mpa-day is-${level}`, label);
   }
 }
@@ -465,8 +470,8 @@ function renderHistory(root, input, state, actions) {
 
   const scale = seriesBuckets(period);
   const grain = scale.step === 1 ? "day" : scale.step === 7 ? "7-day period" : `${scale.step}-day period`;
-  const output = card(root, "Words over time", `Words per ${grain}${scale.step === 1 ? " · dashed line shows the 750-word goal" : ""}`);
-  addChart(output, scale, { label: "Words over time", columns: true, guide: scale.step === 1 ? WORD_GOAL : null, series: [{ label: "Words", value: (row) => row.words, color: "is-volume" }] }, disposers);
+  const output = card(root, "Words over time", `Words per ${grain}${scale.step === 1 ? ` · dashed line shows the ${getWordGoal()}-word goal` : ""}`);
+  addChart(output, scale, { label: "Words over time", columns: true, guide: scale.step === 1 ? getWordGoal() : null, series: [{ label: "Words", value: (row) => row.words, color: "is-volume" }] }, disposers);
 
   const trend = el(root, "div", "mpa-history-grid");
   addTrend(trend, scale, state, actions, disposers);

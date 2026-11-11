@@ -1,4 +1,18 @@
 const WORD_GOAL = 750;
+let configuredGoal = WORD_GOAL;
+let extraWords = {};
+function getWordGoal() { return configuredGoal; }
+function configureAnalysis(goal, additions = {}) {
+  configuredGoal = Number.isSafeInteger(goal) && goal >= 1 ? goal : WORD_GOAL;
+  extraWords = {};
+  for (const [name, group] of Object.entries(GROUPS)) {
+    extraWords[name] = {};
+    for (const { key } of group) {
+      const value = additions?.[name]?.[key];
+      extraWords[name][key] = new Set(frequenciesOf(typeof value === "string" ? value : "").keys());
+    }
+  }
+}
 const WORD = /[\p{L}\p{N}][\p{L}\p{M}\p{N}]*(?:[’'-][\p{L}\p{N}][\p{L}\p{M}\p{N}]*)*/gu;
 const wordSet = (list) => new Set(list.split(" "));
 const groups = (rows) => rows.map(([key, label, color, words]) => ({ key, label, color, words: wordSet(words) }));
@@ -103,13 +117,13 @@ function rankKeywords(counts, limit = 40) {
   return [...counts].sort(([a, n], [b, m]) => m - n || a.localeCompare(b)).slice(0, limit);
 }
 
-function analyzeWriting(markdown) {
+function analyzeWriting(markdown, customWords) {
   const text = prose(markdown);
   const frequencies = frequenciesOf(text);
   const count = (set) => [...set].reduce((sum, token) => sum + (frequencies.get(token) ?? 0), 0);
   const hasWords = (part) => /[\p{L}\p{N}]/u.test(part);
   const breakdowns = Object.fromEntries(Object.entries(GROUPS).map(([name, group]) => [name,
-    Object.fromEntries(group.map(({ key, words }) => [key, count(words)])),
+    Object.fromEntries(group.map(({ key, words }) => [key, count(new Set([...words, ...(customWords ? frequenciesOf(typeof customWords[name]?.[key] === "string" ? customWords[name][key] : "").keys() : extraWords[name]?.[key] || [])]))])),
   ]));
   return {
     words: [...frequencies.values()].reduce((sum, value) => sum + value, 0),
@@ -123,4 +137,4 @@ function analyzeWriting(markdown) {
   };
 }
 
-module.exports = { WORD_GOAL, GROUPS, PAIRS, analyzeWriting, keywordCounts, rankKeywords };
+module.exports = { WORD_GOAL, getWordGoal, configureAnalysis, GROUPS, PAIRS, analyzeWriting, keywordCounts, rankKeywords };

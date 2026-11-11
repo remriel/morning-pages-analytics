@@ -1,5 +1,17 @@
 # Project State
 
+## 2026-11-10: requested Reddit features, 0.5.0
+
+- Only two product changes: configurable positive whole-number daily word goal (750 default), and additive custom words for every existing category. All processing remains local; no network calls were added.
+- `configureAnalysis` sets the runtime goal and case-normalized extra word sets. `getWordGoal` is used throughout tracker, chart marks/guide, calendar thresholds/legend, completion totals and streaks. Custom words union with built-ins, counting exact tokens once per category; inflections must be entered separately.
+- Settings persist `wordGoal` and `customWords`. History records store `analysisKey`; stale records reanalyze when word settings change, including after restart. Indexing captures its word settings independently so concurrent edits cannot mislabel cached analysis. Setting changes refresh history and the active note.
+- npm test: 18 pass, including runtime history recount and browser regressions. npm run build and bundle syntax check pass. Native settings layout remains unverified.
+- Previous 0.4.8 release was published successfully (CI 42921522984); its handoff was interrupted by this new request.
+
+## RESUME HERE (0.5.0)
+
+Implementation and requested checks complete; version 0.5.0 in package, lockfile and manifest. Source synchronized to GitHub. No 0.5.0 release tag was created in this task.
+
 ## 2026-11-10: automatic and multiple filename formats, 0.4.8
 
 - Per-folder source `auto` recognizes twelve common formats plus the Daily Notes format simultaneously. Includes full/short month names, with and without commas, numeric separators and compact dates. Recognition happens per title; no setup or prevalence scan is needed.

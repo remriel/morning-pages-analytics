@@ -1,5 +1,9 @@
 # Morning Pages Analytics
 
+In plugin settings, **Daily word goal** accepts any positive whole number (default 750), including goals below 750. It updates the live tracker, history charts, calendar, completion totals and streaks.
+
+Each category has an **additional words** field. Enter words separated by spaces, commas or newlines; built-in words remain active. Matching ignores case, counts exact words, and does not double-count duplicates. Include word forms separately. Changing the lists automatically reanalyzes tracked history and the active note. Everything is processed and stored locally in the vault.
+
 Morning Pages Analytics is an MIT-licensed Obsidian plugin for local writing analysis and Daily Notes history. Open a note to see its writing stats, or explore patterns across your daily notes.
 
 ![Morning Pages Analytics banner showing synthetic word trends, topics, and tone signals](assets/github-banner.png)
