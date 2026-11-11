@@ -8,27 +8,38 @@
   body { background: var(--background-primary); color: var(--text-normal); font: 15px/1.5 Arial, sans-serif; margin: 0; }
   body.dark { color-scheme: dark; --background-primary: #211f28; --background-secondary: #2b2834; --text-normal: #f2ecfa; --text-muted: #c3bacf; --background-modifier-border: #575063; --interactive-accent: #c0a0ff; }
   body.phone { width: 390px; max-width: 100vw; }
-  body.narrow-pane #settings { width: 450px; }
-  #settings { max-width: 850px; padding: 24px; margin: 0 auto; }
+  body.compact-phone { width: 320px; }
+  body.narrow-pane .vertical-tab-content-container { width: 450px; }
+  body.medium-pane .vertical-tab-content-container { width: 690px; }
+  body.large-type { font-size: 20px; }
+  /* Match the Obsidian settings pane's centered 700px content and native flex defaults. */
+  .modal.mod-settings { display: block; position: static; width: 100%; max-width: none; max-height: none; border: 0; padding: 0; overflow: visible; --size-4-8: 32px; --setting-group-max-width: 700px; --setting-group-center-offset: calc((100% - var(--setting-group-max-width)) / 2); }
+  .vertical-tab-content { width: 100%; padding-block: 24px; }
+  .modal.mod-settings .vertical-tab-content:not(.setting-page) { padding-inline: max(var(--size-4-8), var(--setting-group-center-offset)); }
   .setting-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--background-modifier-border); }
-  .setting-item-info { flex: 1; }
-  .setting-item-control { display: flex; align-items: center; gap: 8px; }
+  .setting-item-info { flex: 1 1 auto; min-width: 0; }
+  .setting-item-control { flex: 1 1 auto; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
   .setting-item-description { color: var(--text-muted); }
   button, input, select, textarea { font: inherit; color: var(--text-normal); background: var(--background-primary); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 7px 10px; }
+  .setting-item-control select.dropdown { width: var(--dropdown-fitted-width, inherit); max-width: 400px; padding-right: 38px; }
   button { cursor: pointer; }
   h2, h3, h4 { line-height: 1.3; }
   #result { white-space: pre-wrap; margin: 20px; }
-  @media (max-width: 600px) { #settings { padding: 14px; } }
+  @media (max-width: 600px) { .modal.mod-settings .vertical-tab-content:not(.setting-page) { padding-inline: 14px; } }
 </style>
-<main id="settings"></main>
+<div class="modal mod-settings"><div class="vertical-tab-content-container"><main id="settings" class="vertical-tab-content"></main></div></div>
 <pre id="result">PENDING</pre>
 <script>
   const errors = [];
   addEventListener("error", (event) => errors.push(event.message));
   addEventListener("unhandledrejection", (event) => errors.push(String(event.reason)));
   if (location.search.includes("dark")) document.body.classList.add("dark");
-  if (location.search.includes("phone")) document.body.classList.add("phone");
+  if (location.search.includes("phone")) document.body.classList.add("phone", "is-phone");
+  if (location.search.includes("compact-phone")) document.body.classList.add("compact-phone");
   if (location.search.includes("narrow-pane")) document.body.classList.add("narrow-pane");
+  if (location.search.includes("medium-pane")) document.body.classList.add("medium-pane");
+  if (location.search.includes("large-type")) { document.body.classList.add("large-type"); document.body.classList.add("medium-pane"); }
+  if (location.search.includes("large-phone")) document.body.classList.add("large-type");
   class FixtureSetting {
     constructor(parent) {
       this.settingEl = parent.appendChild(document.createElement("div")); this.settingEl.className = "setting-item";
@@ -41,6 +52,7 @@
     setDesc(value) { this.descEl.textContent = value; return this; }
     control(tag, callback, type) {
       const input = this.controlEl.appendChild(document.createElement(tag));
+      if (tag === "select") input.className = "dropdown";
       if (type) input.type = type;
       const component = {
         inputEl: input, selectEl: input,
@@ -84,12 +96,24 @@
     await tab.display();
     const root = tab.containerEl;
     const control = (label) => { const input = root.querySelector(`[aria-label="${label}"]`); assert(input, `Missing control: ${label}`); return input; };
+    const assertDropdownFits = (label) => {
+      const input = control(label);
+      const style = getComputedStyle(input);
+      const context = document.createElement("canvas").getContext("2d");
+      context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const available = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const rowWidth = input.closest(".setting-item").clientWidth;
+      assert(input.clientWidth >= rowWidth - 2, `${label} dropdown uses only ${input.clientWidth}px of its ${rowWidth}px row`);
+      for (const option of input.options) assert(context.measureText(option.textContent).width <= available + 1, `${label} option "${option.textContent}" is clipped (${Math.round(available)}px available)`);
+    };
     const change = async (label, value) => { const input = control(label); input.value = value; input.dispatchEvent(new Event(input.tagName === "SELECT" ? "change" : "input", { bubbles: true })); await delay(); };
     const nav = async (name) => { root.querySelector(`[data-section="${name}"]`).click(); await delay(); assert(root.querySelector(`[data-section="${name}"]`).getAttribute("aria-pressed") === "true", "Active section state missing"); };
     assert(root.querySelectorAll("textarea").length === 0, "All category editors should not crowd the first page");
     await change("Daily word goal", "300"); assert(plugin.preferences.wordGoal === 300, "Goal not saved");
     await change("Daily word goal", "-1"); assert(plugin.preferences.wordGoal === 300 && control("Daily word goal").getAttribute("aria-invalid") === "true", "Invalid goal accepted");
     await nav("words");
+    assertDropdownFits("Category group");
+    assertDropdownFits("Category");
     assert(document.activeElement.dataset.section === "words", "Navigation lost keyboard focus");
     assert(root.querySelectorAll("textarea").length === 2, "Word editor should show only one category at a time");
     assert(control("Work & learning base word list").value.includes("office"), "Defaults not visible for editing");
@@ -110,11 +134,14 @@
     assert(control("Work & learning extra words").value === "litigation, contract", "Reset removed extra words");
     for (const [name, categories] of Object.entries(analysis.GROUPS)) {
       await change("Category group", name);
+      assertDropdownFits("Category");
       for (const category of categories) { await change("Category", category.key); assert(control(`${category.label} base word list`), `Unreachable category: ${category.label}`); }
     }
     await nav("history"); await change("Default history range", "90"); await change("Note order within a day", "oldest");
+    assertDropdownFits("Default history range"); assertDropdownFits("Note order within a day");
     assert(plugin.preferences.defaultRange === 90 && plugin.preferences.noteOrder === "oldest", "History controls regressed");
     await nav("folders");
+    assertDropdownFits("Folder 1 date source");
     assert(root.querySelector("details").open, "Initial folder should be expanded");
     const presets = [...root.querySelectorAll('input[type="checkbox"]')].filter((input) => input.getAttribute("aria-label") !== "Include subfolders");
     assert(presets.length === 13, "Missing selectable format presets");
@@ -129,7 +156,11 @@
     clearTimeout(plugin.analysisTimer);
     assert(errors.length === 0, `Uncaught errors: ${errors.join("; ")}`);
     assert(document.documentElement.scrollWidth <= innerWidth + 1, "Horizontal overflow");
-    if (location.search.includes("phone")) assert(root.getBoundingClientRect().right <= 391, "Phone layout exceeds the screenshot viewport");
+    if (location.search.includes("desktop")) {
+      const contentWidth = root.clientWidth - parseFloat(getComputedStyle(root).paddingLeft) - parseFloat(getComputedStyle(root).paddingRight);
+      assert(contentWidth >= root.parentElement.clientWidth - 65, `Settings leave unused horizontal space: ${Math.round(contentWidth)}px of ${root.parentElement.clientWidth}px`);
+    }
+    if (location.search.includes("phone")) assert(root.getBoundingClientRect().right <= document.body.clientWidth + 1, "Phone layout exceeds the screenshot viewport");
     if (location.search.includes("narrow-pane")) {
       assert(getComputedStyle(root.querySelector(".mpa-settings-nav")).gridTemplateColumns.split(" ").length === 2, "Narrow settings pane did not adapt inside a wide desktop window");
       assert(getComputedStyle(control("Category").closest(".setting-item")).flexDirection === "column", "Narrow pane form rows should stack");

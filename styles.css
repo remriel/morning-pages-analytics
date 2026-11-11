@@ -5,6 +5,11 @@
   --mpa-settings-ink: #231b32;
 }
 
+/* Obsidian centers older plugin settings in a fixed-width column. Use the available pane. */
+body:not(.is-phone) .modal.mod-settings .vertical-tab-content.mpa-settings {
+  padding-inline: var(--size-4-8, 32px);
+}
+
 .mpa-settings *, .mpa-settings *::before, .mpa-settings *::after { box-sizing: border-box; }
 .mpa-settings-header {
   background: #ffe06a;
@@ -51,6 +56,9 @@
 .mpa-settings .setting-item-name { font-weight: 650; overflow-wrap: anywhere; }
 .mpa-settings .setting-item-description { margin-top: 5px; font-size: 0.88em; line-height: 1.5; }
 .mpa-settings .setting-item-control { min-width: 0; flex-wrap: wrap; max-width: 52%; }
+.mpa-settings .mpa-dropdown-setting { flex-direction: column; gap: 10px; }
+.mpa-settings .mpa-dropdown-setting .setting-item-control { width: 100%; max-width: 100%; justify-content: flex-start; }
+.mpa-settings .mpa-dropdown-setting .setting-item-control select { width: 100%; max-width: 100%; }
 .mpa-settings :is(input, select, textarea) { max-width: 100%; font: inherit; }
 .mpa-settings input[type="number"] { width: 140px; }
 .mpa-settings :is(input, select) { min-height: 36px; }

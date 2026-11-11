@@ -32,12 +32,15 @@ test("settings allow editing defaults, resetting one category and navigating at 
   try {
     const bundle = join(temporary, "main.js");
     execFileSync(process.execPath, [join(root, "scripts/build.cjs"), bundle], { cwd: root });
-    const html = readFileSync(join(__dirname, "fixtures/settings.html"), "utf8")
+    let html = readFileSync(join(__dirname, "fixtures/settings.html"), "utf8")
       .replace("../../styles.css", pathToFileURL(join(root, "styles.css")).href)
       .replace("../../main.js", pathToFileURL(bundle).href);
+    if (process.env.MPA_OBSIDIAN_CSS) {
+      html = html.replace('<link rel="stylesheet"', `<link rel="stylesheet" href="${pathToFileURL(resolve(process.env.MPA_OBSIDIAN_CSS)).href}">\n<link rel="stylesheet"`);
+    }
     const fixture = join(temporary, "settings.html");
     writeFileSync(fixture, html);
-    for (const [layout, size] of [["desktop", "1100,1400"], ["phone", "390,1700"], ["dark", "1100,1400"], ["narrow-pane", "1100,1700"]]) {
+    for (const [layout, size] of [["large-type", "1100,1700"], ["medium-pane", "1100,1700"], ["desktop", "1100,1400"], ["phone", "390,1700"], ["compact-phone", "320,1700"], ["large-phone", "390,1700"], ["dark", "1100,1400"], ["narrow-pane", "1100,1700"]]) {
       const url = pathToFileURL(fixture);
       url.searchParams.set("layout", layout);
       const screenshotArgs = [];

@@ -60,6 +60,12 @@ function createSettingsTab(PluginSettingTab, Setting) {
       element(parent, "p", "mpa-settings-help", description);
     }
 
+    dropdownSetting(parent, name) {
+      const setting = new Setting(parent).setName(name);
+      setting.settingEl.classList.add("mpa-dropdown-setting");
+      return setting;
+    }
+
     renderWriting(panel) {
       this.heading(panel, "A goal that fits your day", "Your daily goal applies to the live tracker, calendar, completion totals and streaks. Changing it also recalculates past goal completion.");
       const message = element(panel, "p", "mpa-settings-status");
@@ -99,7 +105,7 @@ function createSettingsTab(PluginSettingTab, Setting) {
 
     renderWords(panel) {
       this.heading(panel, "Make the categories your own", "Choose a category to edit its base words or add extra words. Changes automatically update the active note and all tracked history.");
-      new Setting(panel).setName("Category group").addDropdown((dropdown) => {
+      this.dropdownSetting(panel, "Category group").addDropdown((dropdown) => {
         dropdown.addOptions(GROUP_LABELS).setValue(this.group);
         labelInput(dropdown.selectEl, "Category group");
         dropdown.onChange((value) => {
@@ -108,7 +114,7 @@ function createSettingsTab(PluginSettingTab, Setting) {
           void this.display('[aria-label="Category group"]');
         });
       });
-      new Setting(panel).setName("Category").addDropdown((dropdown) => {
+      this.dropdownSetting(panel, "Category").addDropdown((dropdown) => {
         dropdown.addOptions(Object.fromEntries(GROUPS[this.group].map(({ key, label }) => [key, label]))).setValue(this.category);
         labelInput(dropdown.selectEl, "Category");
         dropdown.onChange((value) => { this.category = value; void this.display('[aria-label="Category"]'); });
@@ -167,7 +173,7 @@ function createSettingsTab(PluginSettingTab, Setting) {
 
     renderHistory(panel) {
       this.heading(panel, "Your history view", "Choose the opening date range and the order of notes within a day. Date sources for your folders are in Folders.");
-      new Setting(panel).setName("Default history range").setDesc("Applies when opening history, and updates any history view already open.")
+      this.dropdownSetting(panel, "Default history range").setDesc("Applies when opening history, and updates any history view already open.")
         .addDropdown((dropdown) => {
           dropdown.addOptions({ "7": "7 days", "30": "30 days", "90": "90 days", "365": "1 year", "0": "All dates" }).setValue(String(this.plugin.preferences.defaultRange));
           labelInput(dropdown.selectEl, "Default history range");
@@ -178,7 +184,7 @@ function createSettingsTab(PluginSettingTab, Setting) {
             this.plugin.drawHistory();
           });
         });
-      new Setting(panel).setName("Note order within a day").setDesc("Sort by creation time. Editing a note does not move it to a different day.")
+      this.dropdownSetting(panel, "Note order within a day").setDesc("Sort by creation time. Editing a note does not move it to a different day.")
         .addDropdown((dropdown) => {
           dropdown.addOptions({ newest: "Newest created first", oldest: "Oldest created first" }).setValue(this.plugin.preferences.noteOrder);
           labelInput(dropdown.selectEl, "Note order within a day");
@@ -246,7 +252,7 @@ function createSettingsTab(PluginSettingTab, Setting) {
           await this.plugin.applyFolderChange();
           await this.display();
         }));
-      new Setting(body).setName(`Folder ${index + 1} date source`).setDesc("Choose where the calendar date comes from. Filename modes skip missing or ambiguous dates; they never fall back to import timestamps.")
+      this.dropdownSetting(body, `Folder ${index + 1} date source`).setDesc("Choose where the calendar date comes from. Filename modes skip missing or ambiguous dates; they never fall back to import timestamps.")
         .addDropdown((dropdown) => {
           dropdown.addOptions({ auto: "Automatic filename dates", filename: "Selected filename formats", creation: "Creation timestamp" }).setValue(rule.source);
           labelInput(dropdown.selectEl, `Folder ${index + 1} date source`);

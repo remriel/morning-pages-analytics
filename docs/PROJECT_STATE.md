@@ -1,5 +1,16 @@
 # Project State
 
+## 2026-11-10: settings width fix, 0.5.2
+
+- The user reported truncated settings dropdown labels and requested a release. Obsidian 1.15.0 centers legacy plugin settings using a 700px maximum content width; the plugin also restricted controls to 52% of each setting row. `styles.css` now overrides the centering only for this plugin's desktop settings pane, retaining the host's phone safe-area behavior.
+- `MorningPagesSettingsTab.dropdownSetting` in `src/settings.js` marks category group, category, history range, note order, and folder date-source settings. The associated controls stack below their labels and fill each row, independently of Obsidian's fitted-dropdown rules. Existing settings values and callbacks are unchanged.
+- The browser settings fixture models Obsidian's centered column, native flex rules, and dropdown styling. It checks full pane usage and measures every dropdown option against the available text space across desktop, dark, 450px/690px panes, 320px/390px phone widths, and larger text. The regression failed on the previous layout and passes with the fix.
+- `npm test` passes all 22 tests with Chrome required; build, bundle syntax, and diff checks pass. The settings test also passes against the locally installed Obsidian 1.15.0 stylesheet, loaded into the browser fixture. An isolated native Obsidian process started, but its hidden window could not be targeted; native interaction and real mobile hardware remain unverified.
+
+## RESUME HERE (0.5.2)
+
+Implementation and local verification are complete. Publish the exact `0.5.2` tag using `.github/workflows/publish-release.yml`, check CI and downloaded release assets, and update this handoff. Do not claim a native Obsidian UI test.
+
 ## 2026-11-10: editable base word lists and settings UI, 0.5.1
 
 - User expanded the category-word request to allow editing the default lists, then asked for a clearer settings UI and explicitly authorized publication when complete.

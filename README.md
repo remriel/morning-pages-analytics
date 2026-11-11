@@ -4,7 +4,7 @@ In plugin settings, **Daily word goal** accepts any positive whole number (defau
 
 Settings are organized into **Writing**, **Word lists**, **History**, and **Folders**. In **Word lists**, choose a group and a category to see its current **Base word list**. You can edit, add, replace or remove built-in terms. An empty base list disables those words for that category. **Extra words** keeps your additions separate; existing additions from earlier versions are preserved. **Restore defaults** restores only the selected category's built-in base list and keeps its extra words.
 
-Enter words separated by spaces, commas or newlines. Matching ignores case, counts exact words, and does not double-count duplicates across the base list and extra words. Include word forms separately. Changes save automatically and reanalyze tracked history and the active note after a short typing pause. Everything is processed and stored locally in the vault. Folder settings use expandable cards, and the settings layout adapts to both narrow panes and phone screens.
+Enter words separated by spaces, commas or newlines. Matching ignores case, counts exact words, and does not double-count duplicates across the base list and extra words. Include word forms separately. Changes save automatically and reanalyze tracked history and the active note after a short typing pause. Everything is processed and stored locally in the vault. Folder settings use expandable cards. Settings use the available pane width, with full-width dropdowns that adapt to narrow panes and phone screens.
 
 Morning Pages Analytics is an MIT-licensed Obsidian plugin for local writing analysis and Daily Notes history. Open a note to see its writing stats, or explore patterns across your daily notes.
 

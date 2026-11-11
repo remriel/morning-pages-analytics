@@ -62,11 +62,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Edit the built-in word lists for every category and find your settings more easily.
+          Settings now make better use of the available pane width, and dropdowns have more room for their labels.
 
-          **Editable base lists:** In Word lists, choose a category and edit its base words. Add, remove or replace the built-in terms, or clear the base list entirely. Extra words remain separate. Restore defaults resets the selected category's base list while keeping its extra words. Changes update both the active note and tracked history, and existing additions are preserved.
-
-          **Clearer settings:** Navigate between Writing, Word lists, History and Folders. Edit one category at a time with larger text fields and clear explanations. Expand folder cards as needed. The layout adapts to light/dark themes, narrow settings panes and phone screens, with keyboard navigation and visible focus.
+          **Settings layout fix:** The plugin uses the available settings pane on desktop, and category, history and folder dropdowns span their rows so the selected options are easier to read. The layout continues to adapt to narrow panes and phone screens.
 
           Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
 
