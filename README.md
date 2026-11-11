@@ -4,6 +4,8 @@ Morning Pages Analytics is an MIT-licensed Obsidian plugin for local writing ana
 
 ![Morning Pages Analytics banner showing synthetic word trends, topics, and tone signals](assets/github-banner.png)
 
+If you find the plugin useful, you can [buy me a coffee](https://buymeacoffee.com/remriel).
+
 ## See each note in more detail
 
 **Open writing stats** opens the sidebar for the active note. It shows the word count and live word cloud, plus charts for:
