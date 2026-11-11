@@ -2,6 +2,8 @@
 
 ## 2026-11-10 — publish 0.5.0 and read latest feedback
 
+Publication verified: CI 42952753325 passed eighteen tests and the build; all nine release digests and all four ZIP entries matched. Native settings interaction remains unverified.
+
 1. Least confident: native Obsidian settings layout remains unverified. The release has automated logic, runtime and browser coverage; a disposable native-vault check would add UI evidence.
 2. Biggest gap: a monthly journal note is currently assigned to one day. The latest Reddit commenter needs per-day sections within a single note; supporting that needs a separate design and explicit implementation request.
 3. Highest-impact assumption: publication means the completed two-feature 0.5.0 scope. Keep the new monthly-note request as feedback rather than adding an untested third feature to this release.

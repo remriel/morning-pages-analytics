@@ -2,16 +2,16 @@
 
 ## Current objective: publish 0.5.0
 
-**Progress toward verified publication: 85%.** `[########--]`
+**Progress toward verified publication: 100%.** `[##########]`
 
 - [x] Confirm clean working tree, synchronized source, and version 0.5.0 in manifest/package/lockfile.
 - [x] Review existing eighteen passing tests and successful build; preserve the two-feature scope.
 - [x] Prepare accurate release notes and use npm test/npm run build in release CI.
 - [x] Read and summarize the newest Reddit comment about monthly journal notes; no feature change requested.
-- [ ] Push exact 0.5.0 tag and confirm release workflow passes.
-- [ ] Verify release assets and installation ZIP against the build.
+- [x] Push exact 0.5.0 tag; workflow 42952753325 passed all eighteen tests, npm run build, syntax and packaging checks.
+- [x] Verify all nine release digests and four ZIP entries; direct plugin files match the source/build after line-ending normalization. Released manifest is 0.5.0.
 
-Next: commit release preparation, push tag 0.5.0, verify CI and downloadable files, then record publication.
+Publication complete: https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.0. Next optional check: native Obsidian settings layout. The latest monthly-note Reddit request is feedback only; implementation is not authorized in this task.
 
 ## Current objective: only the two requested Reddit features, 0.5.0
 
@@ -27,14 +27,14 @@ Implementation is complete. Publication is now authorized and tracked above. Nat
 
 ## Current objective: automatic recognition and format presets, 0.4.8
 
-**Progress: 90%.** `[#########-]`
+**Progress: 100%.** `[##########]`
 
 - [x] Twelve presets, including written months, recognized together automatically.
 - [x] Manual multiple-choice presets with simultaneous matching and custom formats.
 - [x] Migration and ambiguity handling; sixteen tests, build, browser and syntax checks pass.
-- [ ] Publish 0.4.8 and verify release CI/assets.
+- [x] Publish 0.4.8; workflow 42921522984 passed and release assets were verified.
 
-Next: publish tag, verify release, record completion.
+0.4.8 publication complete. Superseded by the 0.5.0 release above.
 
 ## Current objective: per-folder date source, 0.4.7
 

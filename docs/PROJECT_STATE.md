@@ -10,7 +10,7 @@
 
 ## RESUME HERE (0.5.0)
 
-Implementation and requested checks complete; version 0.5.0 in package, lockfile and manifest. Source synchronized to GitHub. The user has now explicitly requested publication. Release notes describe only the configurable goal and custom category word features; publication and asset verification are in progress.
+0.5.0 is published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.0, targeting 97288e0ac4f769c6d4ffd509ae699f5b8a28c49a. Workflow 42952753325 passed all eighteen tests, npm run build, syntax check and packaging. All nine downloaded release asset SHA-256 digests match GitHub; the four ZIP entries match the direct files. Plugin source/build content matches the released files after normalizing line endings. Native Obsidian settings layout remains unverified. No implementation steps remain for the two-feature release.
 
 ## Reddit follow-up observed 2026-11-10
 
@@ -26,7 +26,7 @@ Implementation and requested checks complete; version 0.5.0 in package, lockfile
 
 ## RESUME HERE (0.4.8)
 
-Publish 0.4.8 and verify release CI/assets. For Ledger choose Automatic filename dates or manually enable its formats if numeric titles are ambiguous.
+0.4.8 was published; workflow 42921522984 passed and assets were verified. For Ledger choose Automatic filename dates or manually enable its formats if numeric titles are ambiguous. Superseded by the 0.5.0 handoff above.
 
 ## 2026-11-10: per-folder date sources, 0.4.7
 
