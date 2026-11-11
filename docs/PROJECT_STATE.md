@@ -6,7 +6,7 @@ History and default settings include 14, 60 and 180 days. Finite ranges have pre
 
 ## RESUME HERE (0.5.3)
 
-Verify tests and publish 0.5.3.
+0.5.3 published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.3; CI 42975208872 and all 22 tests passed. Native Obsidian interaction remains unverified.
 
 
 ## 2026-11-10: settings width fix, 0.5.2

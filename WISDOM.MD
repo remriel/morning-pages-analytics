@@ -2,6 +2,8 @@
 
 ## 2026-11-10 — history period navigation
 
+Published 0.5.3; all 22 tests and release CI passed.
+
 1. Least confident: native Obsidian interaction; verify there after release.
 2. Biggest gap: navigation must move by the selected number of days and reset when the range changes.
 3. Highest-impact assumption: arrows apply to finite preset ranges; revisit if custom ranges should also navigate.

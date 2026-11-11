@@ -1,12 +1,12 @@
 # Progress
 
-## Current objective: 14/60 day ranges and period navigation, 0.5.3
+## Current objective: 14/60/180 day ranges and period navigation, 0.5.3
 
-**Progress: 60%.** `[######----]`
+**Progress: 100%.** `[##########]`
 
 - [x] Add both ranges to the dashboard, defaults and persisted settings.
 - [x] Add previous/next period navigation.
-- [ ] Verify tests and publish the release.
+- [x] All 22 tests passed; build and release workflow 42975208872 succeeded. Published https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.3.
 
 
 ## Current objective: use the available settings width and publish 0.5.2
