@@ -2,6 +2,8 @@
 
 ## 2026-11-10 — folder autocomplete
 
+Published 0.5.4; all 22 tests, CI, and nine asset digests passed.
+
 1. Least confident: native datalist behavior on mobile Obsidian; verify on a device.
 2. Biggest gap: empty and nested folders should appear even when they contain no Markdown notes.
 3. Highest-impact assumption: choosing a suggestion should use the existing automatic folder refresh and date-source behavior; revisit if a separate confirmation is desired.

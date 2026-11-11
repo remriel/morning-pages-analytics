@@ -2,11 +2,11 @@
 
 ## Current objective: folder autocomplete and release 0.5.4
 
-**Progress: 60%.** `[######----]`
+**Progress: 100%.** `[##########]`
 
 - [x] Suggest vault folders as the user types; keep manual paths.
-- [ ] Run tests and publish the release.
-- [ ] Verify the release and update the handoff.
+- [x] All 22 tests and release CI 42981816017 passed.
+- [x] Published https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.4 and verified nine asset digests. Native Obsidian and mobile remain unverified.
 
 
 ## Current objective: 14/60/180 day ranges and period navigation, 0.5.3

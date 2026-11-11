@@ -6,7 +6,7 @@ Folder path fields use a native datalist populated from loaded vault folders, in
 
 ## RESUME HERE (0.5.4)
 
-Verify the implementation and publish version 0.5.4.
+0.5.4 is published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.4. All 22 tests, CI 42981816017, and nine asset digests passed. Verify the native suggestion popup in Obsidian and on mobile when possible.
 
 
 ## 2026-11-10: history ranges and navigation, 0.5.3
