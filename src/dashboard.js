@@ -427,12 +427,19 @@ function renderHistory(root, input, state, actions) {
   const tools = el(root, "div", "mpa-actions mpa-history-tools");
   const rangeLabel = el(tools, "label", "mpa-field", "Date range");
   const range = el(rangeLabel, "select", "dropdown");
-  for (const [value, label] of [[7, "7 days"], [30, "30 days"], [90, "90 days"], [365, "1 year"], [0, "All dates"], ["custom", "Custom range"]]) {
+  for (const [value, label] of [[7, "7 days"], [14, "14 days"], [30, "30 days"], [60, "60 days"], [90, "90 days"], [180, "180 days"], [365, "1 year"], [0, "All dates"], ["custom", "Custom range"]]) {
     el(range, "option", "", label).value = String(value);
   }
   range.value = String(state.range);
-  range.addEventListener("change", () => actions.change({ range: range.value === "custom" ? "custom" : Number(range.value), rangeChosen: true, day: null, month: null }, "select.mpa-range"));
+  range.addEventListener("change", () => actions.change({ range: range.value === "custom" ? "custom" : Number(range.value), rangeOffset: 0, rangeChosen: true, day: null, month: null }, "select.mpa-range"));
   range.classList.add("mpa-range");
+  for (const [direction, label, symbol] of [[-1, "Previous period", "←"], [1, "Next period", "→"]]) {
+    const nav = button(tools, symbol, () => actions.change({ rangeOffset: (state.rangeOffset || 0) + direction, rangeChosen: true, day: null, month: null }, direction < 0 ? ".mpa-range-prev" : ".mpa-range-next"));
+    nav.classList.add(direction < 0 ? "mpa-range-prev" : "mpa-range-next");
+    nav.setAttribute("aria-label", label);
+    nav.title = label;
+    nav.disabled = typeof state.range !== "number" || state.range <= 0;
+  }
   const refresh = button(tools, input.loading ? "Indexing…" : "Refresh daily history", actions.refresh);
   refresh.disabled = input.loading;
   const days = groupDays(input.entries);
@@ -448,6 +455,10 @@ function renderHistory(root, input, state, actions) {
     addCustomRange(root, state, actions);
   }
   let period = historyWindow(days, input.today, state.range, state.custom);
+  if (typeof state.range === "number" && state.range > 0 && state.rangeOffset) {
+    const shift = state.rangeOffset * state.range;
+    period = historyWindow(days, input.today, "custom", { start: isoDay(ordinal(period.start) + shift), end: isoDay(ordinal(period.end) + shift) });
+  }
   if (!state.rangeChosen && !period.days.length && state.range === 30) {
     state.range = 0;
     range.value = "0";

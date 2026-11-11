@@ -62,9 +62,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Settings now make better use of the available pane width, and dropdowns have more room for their labels.
+          Choose 14-day, 60-day and 180-day history ranges and move between periods with the new arrows.
 
-          **Settings layout fix:** The plugin uses the available settings pane on desktop, and category, history and folder dropdowns span their rows so the selected options are easier to read. The layout continues to adapt to narrow panes and phone screens.
+          **History navigation:** Select a finite range and use the previous and next arrows to move by that many days.
 
           Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
 
@@ -72,7 +72,7 @@ jobs:
 
           **For a note:** See word count, writing cues, mindset balances, pronouns, senses and a word cloud.
 
-          **Over time:** Browse word trends, category mix, goal streaks and a writing calendar. Filter by 7, 30, 90 or 365 days, all dates, or a custom range. Inspect individual days and compare each period with the one before it.
+          **Over time:** Browse word trends, category mix, goal streaks and a writing calendar. Filter by 7, 14, 30, 60, 90, 180 or 365 days, all dates, or a custom range. Inspect individual days and compare each period with the one before it.
 
           Examples shown here use synthetic writing. The language charts count English word cues and are most useful for exploring patterns across notes.
 

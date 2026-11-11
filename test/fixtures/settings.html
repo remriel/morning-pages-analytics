@@ -138,6 +138,8 @@
       for (const category of categories) { await change("Category", category.key); assert(control(`${category.label} base word list`), `Unreachable category: ${category.label}`); }
     }
     await nav("history"); await change("Default history range", "90"); await change("Note order within a day", "oldest");
+    for (const range of ["14", "60", "180"]) { await change("Default history range", range); assert(plugin.preferences.defaultRange === Number(range), `Default range ${range} was not saved`); }
+    await change("Default history range", "90");
     assertDropdownFits("Default history range"); assertDropdownFits("Note order within a day");
     assert(plugin.preferences.defaultRange === 90 && plugin.preferences.noteOrder === "oldest", "History controls regressed");
     await nav("folders");

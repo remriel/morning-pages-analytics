@@ -113,6 +113,15 @@
     view.draw();
     sameScroll(before, "background redraw changed scroll position");
 
+    for (const days of [14, 60, 180]) {
+      selectValue(".mpa-range", String(days));
+      const initial = root.querySelector(".mpa-caption").textContent;
+      root.querySelector(".mpa-range-prev").click();
+      assert(view.state.rangeOffset === -1 && root.querySelector(".mpa-caption").textContent !== initial, `previous ${days}-day period did not change`);
+      root.querySelector(".mpa-range-next").click();
+      assert(view.state.rangeOffset === 0 && root.querySelector(".mpa-caption").textContent === initial, `next ${days}-day period did not restore`);
+    }
+    await delay(300);
     // A new range loads a much shorter cloud after the user has scrolled down.
     // The visible calendar should stay in place when that asynchronous data arrives.
     selectValue(".mpa-range", "90");

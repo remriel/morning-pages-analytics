@@ -1,5 +1,14 @@
 # Project State
 
+## 2026-11-10: history ranges and navigation, 0.5.3
+
+History and default settings include 14, 60 and 180 days. Finite ranges have previous/next buttons moving by their length; All and Custom disable those buttons. Changing the range resets the offset. Native Obsidian interaction remains unverified.
+
+## RESUME HERE (0.5.3)
+
+Verify tests and publish 0.5.3.
+
+
 ## 2026-11-10: settings width fix, 0.5.2
 
 - The user reported truncated settings dropdown labels and requested a release. Obsidian 1.15.0 centers legacy plugin settings using a 700px maximum content width; the plugin also restricted controls to 52% of each setting row. `styles.css` now overrides the centering only for this plugin's desktop settings pane, retaining the host's phone safe-area behavior.

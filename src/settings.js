@@ -175,12 +175,12 @@ function createSettingsTab(PluginSettingTab, Setting) {
       this.heading(panel, "Your history view", "Choose the opening date range and the order of notes within a day. Date sources for your folders are in Folders.");
       this.dropdownSetting(panel, "Default history range").setDesc("Applies when opening history, and updates any history view already open.")
         .addDropdown((dropdown) => {
-          dropdown.addOptions({ "7": "7 days", "30": "30 days", "90": "90 days", "365": "1 year", "0": "All dates" }).setValue(String(this.plugin.preferences.defaultRange));
+          dropdown.addOptions({ "7": "7 days", "14": "14 days", "30": "30 days", "60": "60 days", "90": "90 days", "180": "180 days", "365": "1 year", "0": "All dates" }).setValue(String(this.plugin.preferences.defaultRange));
           labelInput(dropdown.selectEl, "Default history range");
           dropdown.onChange(async (value) => {
             this.plugin.preferences.defaultRange = Number(value);
             await this.plugin.persist();
-            for (const view of this.plugin.historyViews) Object.assign(view.state, { range: Number(value), rangeChosen: true, day: null, month: null });
+            for (const view of this.plugin.historyViews) Object.assign(view.state, { range: Number(value), rangeOffset: 0, rangeChosen: true, day: null, month: null });
             this.plugin.drawHistory();
           });
         });

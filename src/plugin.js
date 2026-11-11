@@ -144,7 +144,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         wordListOverrides: normalizeWordListOverrides(saved.wordListOverrides),
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
         includeSubfolders: saved.includeSubfolders !== false,
-        defaultRange: [0, 7, 30, 90, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
+        defaultRange: [0, 7, 14, 30, 60, 90, 180, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
         noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
       };
       configureAnalysis(this.preferences.wordGoal, this.preferences.customWords, this.preferences.wordListOverrides);

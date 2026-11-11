@@ -1,5 +1,12 @@
 # Wisdom
 
+## 2026-11-10 — history period navigation
+
+1. Least confident: native Obsidian interaction; verify there after release.
+2. Biggest gap: navigation must move by the selected number of days and reset when the range changes.
+3. Highest-impact assumption: arrows apply to finite preset ranges; revisit if custom ranges should also navigate.
+
+
 ## 2026-11-10 — settings width, release 0.5.2
 
 Published 0.5.2; CI 42971601303 and asset/ZIP verification passed. All 22 tests passed.

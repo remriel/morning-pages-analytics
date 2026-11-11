@@ -1,5 +1,14 @@
 # Progress
 
+## Current objective: 14/60 day ranges and period navigation, 0.5.3
+
+**Progress: 60%.** `[######----]`
+
+- [x] Add both ranges to the dashboard, defaults and persisted settings.
+- [x] Add previous/next period navigation.
+- [ ] Verify tests and publish the release.
+
+
 ## Current objective: use the available settings width and publish 0.5.2
 
 **Progress toward verified publication: 100%.** `[##########]`
