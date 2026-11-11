@@ -12,7 +12,7 @@
 
 ## RESUME HERE (0.5.1)
 
-Code and requested checks complete. Publish 0.5.1, verify CI and downloaded assets/ZIP, then record completion. No monthly-note splitting was added.
+0.5.1 published: https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.1. CI 42954591844 passed all 22 tests, build and packaging. Downloaded asset digests, all four ZIP entries and source/build content (normalized line endings) were verified. Work complete; native Obsidian/theme/hardware verification is optional. No monthly-note splitting was added.
 
 ## 2026-11-10: requested Reddit features, 0.5.0
 

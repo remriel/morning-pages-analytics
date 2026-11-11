@@ -2,7 +2,7 @@
 
 ## Current objective: editable defaults, clearer settings and release 0.5.1
 
-**Progress toward verified publication: 90%.** `[#########-]`
+**Progress toward verified publication: 100%.** `[##########]`
 
 - [x] Edit, replace, remove or clear base words for every category; retain separate additions.
 - [x] Restore built-in defaults for one category without deleting its additions.
@@ -10,10 +10,10 @@
 - [x] Organize settings into four sections with one category editor and expandable folders.
 - [x] Verify navigation, readable fields, accessible names, keyboard focus and responsive layouts in desktop/phone-width/dark/narrow-pane browser previews; inspect screenshots.
 - [x] npm test: 22 pass with browser checks required; npm run build, syntax and diff checks pass.
-- [ ] Publish exact 0.5.1 tag and verify release CI.
-- [ ] Verify release hashes, direct files and installation ZIP.
+- [x] Publish exact 0.5.1 tag; CI 42954591844 passed all 22 tests, build and packaging.
+- [x] Verify all downloaded release digests, four ZIP entries and source/build files (normalized line endings).
 
-Next: commit and push, publish 0.5.1, verify artifacts, then record publication. Native Obsidian settings interaction remains unverified.
+Published: https://github.com/remriel/morning-pages-analytics/releases/tag/0.5.1. No required steps remain. Native Obsidian settings interaction remains unverified.
 
 ## Current objective: publish 0.5.0
 
