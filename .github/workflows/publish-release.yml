@@ -29,8 +29,8 @@ jobs:
           MPA_REQUIRE_BROWSER: "1"
         run: |
           npm ci
-          node --test
-          node scripts/build.cjs
+          npm test
+          npm run build
           node --check main.js
           test -s main.js
           node -e 'const m=require("./manifest.json"),p=require("./package.json");if(!/^\d+\.\d+\.\d+$/.test(m.version)||m.version!==p.version)process.exit(1)'
@@ -62,9 +62,13 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Automatically recognize twelve common filename date formats together, including written months such as September 13 2026.
+          Set your own daily word goal and add custom words to the existing analysis categories.
 
-          Choose Automatic filename dates for recognition without entering formats. Selected filename formats offers twelve presets with examples and supports multiple active formats plus optional custom formats. Conflicting numeric dates are skipped rather than guessed; select day-first or month-first manually when necessary. Existing single-format settings migrate automatically. Creation timestamp mode remains available independently for each folder.
+          **Daily word goal:** Choose any positive whole number, including goals below 750. The default remains 750. Your goal applies to the live tracker, history charts, calendar, completion totals, and streaks.
+
+          **Custom category words:** Add your own words to any existing category while keeping the built-in lists. For example, add legal terms to Work & learning. Matching ignores case and duplicate entries. Word-list changes update the active note and automatically recount tracked history.
+
+          Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
 
           Morning Pages Analytics is an open-source Obsidian plugin for local writing stats and automatic Daily Notes history.
 

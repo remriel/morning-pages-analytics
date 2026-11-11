@@ -10,7 +10,12 @@
 
 ## RESUME HERE (0.5.0)
 
-Implementation and requested checks complete; version 0.5.0 in package, lockfile and manifest. Source synchronized to GitHub. No 0.5.0 release tag was created in this task.
+Implementation and requested checks complete; version 0.5.0 in package, lockfile and manifest. Source synchronized to GitHub. The user has now explicitly requested publication. Release notes describe only the configurable goal and custom category word features; publication and asset verification are in progress.
+
+## Reddit follow-up observed 2026-11-10
+
+- Latest comment when sorted by New was u/Separatennm asking about one running note per month and splitting word counts by day: https://www.reddit.com/r/ObsidianMD/comments/1xsy2o8/made_a_morning_pages_plugin_for_obsidian/?sort=new.
+- Current history assigns a whole file to one calendar day. Per-day sections inside monthly notes are not supported. The user requested reading/summarizing this comment, not implementation; keep it outside the 0.5.0 scope.
 
 ## 2026-11-10: automatic and multiple filename formats, 0.4.8
 

@@ -1,5 +1,18 @@
 # Progress
 
+## Current objective: publish 0.5.0
+
+**Progress toward verified publication: 85%.** `[########--]`
+
+- [x] Confirm clean working tree, synchronized source, and version 0.5.0 in manifest/package/lockfile.
+- [x] Review existing eighteen passing tests and successful build; preserve the two-feature scope.
+- [x] Prepare accurate release notes and use npm test/npm run build in release CI.
+- [x] Read and summarize the newest Reddit comment about monthly journal notes; no feature change requested.
+- [ ] Push exact 0.5.0 tag and confirm release workflow passes.
+- [ ] Verify release assets and installation ZIP against the build.
+
+Next: commit release preparation, push tag 0.5.0, verify CI and downloadable files, then record publication.
+
 ## Current objective: only the two requested Reddit features, 0.5.0
 
 **Progress: 100%.** `[##########]`
@@ -10,7 +23,7 @@
 - [x] npm test: 18 passed; npm run build and syntax checks passed.
 - [x] Version bumped to 0.5.0.
 
-Next: no implementation steps required. Native UI verification and publication are future steps; this task does not create a release tag.
+Implementation is complete. Publication is now authorized and tracked above. Native UI verification remains optional.
 
 ## Current objective: automatic recognition and format presets, 0.4.8
 
