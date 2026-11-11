@@ -2,7 +2,9 @@
 
 In plugin settings, **Daily word goal** accepts any positive whole number (default 750), including goals below 750. It updates the live tracker, history charts, calendar, completion totals and streaks.
 
-Each category has an **additional words** field. Enter words separated by spaces, commas or newlines; built-in words remain active. Matching ignores case, counts exact words, and does not double-count duplicates. Include word forms separately. Changing the lists automatically reanalyzes tracked history and the active note. Everything is processed and stored locally in the vault.
+Settings are organized into **Writing**, **Word lists**, **History**, and **Folders**. In **Word lists**, choose a group and a category to see its current **Base word list**. You can edit, add, replace or remove built-in terms. An empty base list disables those words for that category. **Extra words** keeps your additions separate; existing additions from earlier versions are preserved. **Restore defaults** restores only the selected category's built-in base list and keeps its extra words.
+
+Enter words separated by spaces, commas or newlines. Matching ignores case, counts exact words, and does not double-count duplicates across the base list and extra words. Include word forms separately. Changes save automatically and reanalyze tracked history and the active note after a short typing pause. Everything is processed and stored locally in the vault. Folder settings use expandable cards, and the settings layout adapts to both narrow panes and phone screens.
 
 Morning Pages Analytics is an MIT-licensed Obsidian plugin for local writing analysis and Daily Notes history. Open a note to see its writing stats, or explore patterns across your daily notes.
 
@@ -33,7 +35,7 @@ Folder changes refresh writing history automatically after typing settles. Editi
 
 ## Local data
 
-The v2 plugin cache stores note paths, dates, file metadata, and numeric analysis counts. It does not persist note text or keyword counts. Word-cloud counts are rebuilt from the selected notes and kept in memory for up to four date ranges.
+The local plugin cache stores note paths, dates, file metadata, numeric analysis counts, and a word-settings signature so edited lists trigger a recount. Preferences store your goal, edited base lists, and extra words in the vault's plugin data. Note text and keyword counts are not persisted. Word-cloud counts are rebuilt from the selected notes and kept in memory for up to four date ranges.
 
 ## Build and install
 

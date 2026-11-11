@@ -1,7 +1,7 @@
 {
   "id": "morning-pages-analytics",
   "name": "Morning Pages Analytics",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "minAppVersion": "1.5.7",
   "description": "Live writing stats and automatic Daily Notes history with charts, a calendar, and writing streaks.",
   "author": "remriel",

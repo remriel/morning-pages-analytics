@@ -62,11 +62,11 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Set your own daily word goal and add custom words to the existing analysis categories.
+          Edit the built-in word lists for every category and find your settings more easily.
 
-          **Daily word goal:** Choose any positive whole number, including goals below 750. The default remains 750. Your goal applies to the live tracker, history charts, calendar, completion totals, and streaks.
+          **Editable base lists:** In Word lists, choose a category and edit its base words. Add, remove or replace the built-in terms, or clear the base list entirely. Extra words remain separate. Restore defaults resets the selected category's base list while keeping its extra words. Changes update both the active note and tracked history, and existing additions are preserved.
 
-          **Custom category words:** Add your own words to any existing category while keeping the built-in lists. For example, add legal terms to Work & learning. Matching ignores case and duplicate entries. Word-list changes update the active note and automatically recount tracked history.
+          **Clearer settings:** Navigate between Writing, Word lists, History and Folders. Edit one category at a time with larger text fields and clear explanations. Expand folder cards as needed. The layout adapts to light/dark themes, narrow settings panes and phone screens, with keyboard navigation and visible focus.
 
           Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
 

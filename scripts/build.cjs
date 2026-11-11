@@ -4,7 +4,7 @@ const { join } = require("node:path");
 const root = join(__dirname, "..");
 const readSource = (name) => readFileSync(join(root, "src", name), "utf8").trimEnd();
 
-const modules = ["analysis", "history", "dashboard"].map((name, index, ordered) => `const ${name} = (() => {
+const modules = ["analysis", "history", "dashboard", "settings"].map((name, index, ordered) => `const ${name} = (() => {
   const module = { exports: {} };
 ${index ? `  const require = (id) => ({ ${ordered.slice(0, index).map((dependency) => `"./${dependency}.js": ${dependency}`).join(", ")} })[id];` : ""}
 ${readSource(`${name}.js`)}
@@ -17,4 +17,4 @@ ${modules}
 ${readSource("plugin.js")}
 `;
 
-writeFileSync(join(root, "main.js"), bundle);
+writeFileSync(process.argv[2] || join(root, "main.js"), bundle);

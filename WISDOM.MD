@@ -1,5 +1,11 @@
 # Wisdom
 
+## 2026-11-10 — editable defaults and settings navigation
+
+1. Least confident: behavior under actual Obsidian themes and mobile hardware. Production settings are exercised in a browser harness at four layouts, but I would verify the released UI in a disposable native vault next.
+2. Biggest gap: clearing a base list and restoring the shipped list must be different actions. Empty overrides now persist deliberately, while Restore defaults removes only that category's override and preserves additions.
+3. Highest-impact assumption: editing a list should reanalyze past writing with the current list. The UI explains this; immutable past analysis would need a separate versioned-history design.
+
 ## 2026-11-10 — publish 0.5.0 and read latest feedback
 
 Publication verified: CI 42952753325 passed eighteen tests and the build; all nine release digests and all four ZIP entries matched. Native settings interaction remains unverified.

@@ -1,6 +1,6 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
-const { analyzeWriting, keywordCounts, configureAnalysis, GROUPS } = analysis;
-const { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
+const { analyzeWriting, keywordCounts, configureAnalysis, normalizeWordListOverrides } = analysis;
+const { normalizeFolderRule, CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
@@ -109,122 +109,7 @@ class WritingHistoryView extends ItemView {
   }
 }
 
-class MorningPagesSettingsTab extends PluginSettingTab {
-  constructor(app, plugin) { super(app, plugin); this.plugin = plugin; }
-  display() {
-    this.containerEl.empty();
-    new Setting(this.containerEl).setName("Daily word goal")
-      .setDesc("A positive whole number, such as 100, 300, 750, 1000 or 2000. Used by the live tracker, history and streaks.")
-      .addText((text) => text.setValue(String(this.plugin.preferences.wordGoal || 750)).onChange(async (value) => {
-        const goal = Number(value);
-        if (!/^\d+$/.test(value.trim()) || !Number.isSafeInteger(goal) || goal < 1) return;
-        this.plugin.preferences.wordGoal = goal;
-        await this.plugin.applyAnalysisSettings();
-      }));
-    for (const [name, categories] of Object.entries(GROUPS)) {
-      for (const { key, label } of categories) new Setting(this.containerEl).setName(`${label}: additional words`)
-        .setDesc(`${name}. Add words separated by spaces, commas or newlines. Built-in words stay enabled; matching ignores case. Word forms must be listed separately.`)
-        .addTextArea((text) => text.setValue(this.plugin.preferences.customWords?.[name]?.[key] || "").onChange((value) => {
-          this.plugin.preferences.customWords ||= {};
-          this.plugin.preferences.customWords[name] ||= {};
-          this.plugin.preferences.customWords[name][key] = value;
-          void this.plugin.persist();
-          clearTimeout(this.plugin.analysisTimer);
-          this.plugin.analysisTimer = setTimeout(() => void this.plugin.applyAnalysisSettings(), 450);
-        }));
-    }
-    new Setting(this.containerEl).setName("Daily Notes filename format")
-      .setDesc("Leave blank to use Obsidian's Daily Notes format. For example: YYYY-MM-DD or DD-MM-YYYY. This only affects Daily Notes; additional folders use creation dates.")
-      .addText((text) => text.setPlaceholder("Use Daily Notes settings").setValue(this.plugin.preferences.dateFormat).onChange((value) => {
-        this.plugin.preferences.dateFormat = value.trim();
-        this.plugin.scheduleFolderRefresh();
-      }));
-    new Setting(this.containerEl).setName("Include subfolders")
-      .setDesc("Track notes inside nested folders of the additional writing folders.")
-      .addToggle((toggle) => toggle.setValue(this.plugin.preferences.includeSubfolders).onChange(async (value) => {
-        this.plugin.preferences.includeSubfolders = value;
-        await this.plugin.applyFolderChange();
-      }));
-    new Setting(this.containerEl).setName("Default history range")
-      .setDesc("The date range shown when opening writing history.")
-      .addDropdown((dropdown) => dropdown.addOptions({ "7": "7 days", "30": "30 days", "90": "90 days", "365": "1 year", "0": "All dates" })
-        .setValue(String(this.plugin.preferences.defaultRange)).onChange(async (value) => {
-          this.plugin.preferences.defaultRange = Number(value);
-          await this.plugin.persist();
-          for (const view of this.plugin.historyViews) { view.state.range = Number(value); view.state.rangeChosen = true; view.state.day = null; view.state.month = null; }
-          this.plugin.drawHistory();
-        }));
-    new Setting(this.containerEl).setName("Note order within a day")
-      .setDesc("Sort by creation time. Editing a note does not change its position or date.")
-      .addDropdown((dropdown) => dropdown.addOptions({ newest: "Newest created first", oldest: "Oldest created first" })
-        .setValue(this.plugin.preferences.noteOrder).onChange(async (value) => {
-          this.plugin.preferences.noteOrder = value;
-          await this.plugin.persist();
-          this.plugin.drawHistory();
-        }));
-    new Setting(this.containerEl).setName("Additional writing folders")
-      .setDesc("Choose a date source for each folder. Formatted filenames suit imported journals; creation timestamps suit notes with arbitrary titles. Changes refresh history automatically.")
-      .addButton((button) => button.setButtonText("Add folder").onClick(async () => {
-        await this.plugin.ready;
-        this.plugin.customFolders.push("");
-        this.display();
-      }));
-    this.plugin.customFolders.forEach((folder, index) => {
-      const folderKey = () => normalizeFolders([this.plugin.customFolders[index]])[0] || "";
-      const rule = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
-      new Setting(this.containerEl).setName(`Folder ${index + 1}`)
-        .addText((text) => {
-          text.setPlaceholder("Journal/Morning Pages").setValue(folder).onChange(async (value) => {
-          await this.plugin.ready;
-          const previousRule = this.plugin.folderDateRules[folderKey()];
-          this.plugin.customFolders[index] = value;
-          if (previousRule && folderKey()) this.plugin.folderDateRules[folderKey()] = { ...previousRule };
-          this.plugin.scheduleFolderRefresh();
-          });
-        })
-        .addButton((button) => button.setButtonText("Remove").onClick(async () => {
-          await this.plugin.ready;
-          clearTimeout(this.plugin.folderTimer);
-          this.plugin.customFolders.splice(index, 1);
-          await this.plugin.applyFolderChange();
-          this.display();
-        }));
-      {
-        new Setting(this.containerEl).setName(`Folder ${index + 1} date source`)
-          .setDesc("Automatic mode recognizes common date titles, including written months. Filename modes skip ambiguous or nonmatching titles, without falling back to timestamps.")
-          .addDropdown((dropdown) => dropdown.addOptions({ auto: "Automatic filename dates", filename: "Selected filename formats", creation: "Creation timestamp" })
-            .setValue(rule.source).onChange(async (source) => {
-              this.plugin.folderDateRules[folderKey()] = { ...this.plugin.folderDateRules[folderKey()], source };
-              await this.plugin.applyFolderChange();
-              this.display();
-            }));
-        if (rule.source === "auto") new Setting(this.containerEl).setName("Automatic date recognition")
-          .setDesc(`Recognizes ${DATE_FORMAT_PRESETS.length} common formats plus the Daily Notes format. No formats to add. If a numeric title could mean two different dates, use Selected filename formats to choose day-first or month-first.`);
-        if (rule.source === "filename") {
-          const choices = [["", "Use Daily Notes format"], ...DATE_FORMAT_PRESETS];
-          for (const [format, example] of choices) new Setting(this.containerEl).setName(example)
-            .setDesc(format || "Also match the configured Daily Notes format.")
-            .addToggle((toggle) => toggle.setValue(rule.formats.includes(format)).onChange(async (enabled) => {
-              const current = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
-              current.source = "filename";
-              current.formats = enabled ? [...new Set([...current.formats, format])] : current.formats.filter((value) => value !== format);
-              this.plugin.folderDateRules[folderKey()] = current;
-              await this.plugin.applyFolderChange();
-            }));
-          const presets = new Set(choices.map(([format]) => format));
-          new Setting(this.containerEl).setName("Other filename formats")
-            .setDesc("Optional: one custom format per line. All enabled formats are matched together. If none are enabled, this folder has no filename matches.")
-            .addTextArea((text) => text.setPlaceholder("YYYY/MM/DD").setValue(rule.formats.filter((format) => !presets.has(format)).join("\n")).onChange((value) => {
-              const current = normalizeFolderRule(this.plugin.folderDateRules[folderKey()]);
-              current.formats = [...new Set([...current.formats.filter((format) => presets.has(format)), ...value.split(/\r?\n/).map((format) => format.trim()).filter(Boolean)])];
-              this.plugin.folderDateRules[folderKey()] = current;
-              this.plugin.scheduleFolderRefresh();
-            }));
-        }
-      }
-    });
-  }
-}
+const MorningPagesSettingsTab = settings.createSettingsTab(PluginSettingTab, Setting);
 
 module.exports = class MorningPagesAnalytics extends Plugin {
   statsViews = new Set();
@@ -236,7 +121,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   daily = DEFAULT_DAILY;
   customFolders = [];
   folderDateRules = {};
-  preferences = { dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" };
+  preferences = { wordGoal: 750, customWords: {}, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" };
   folderTimer = null;
   activeFile = null;
   revision = 0;
@@ -256,12 +141,13 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       this.preferences = {
         wordGoal: Number.isSafeInteger(saved.wordGoal) && saved.wordGoal > 0 ? saved.wordGoal : 750,
         customWords: saved.customWords && typeof saved.customWords === "object" ? saved.customWords : {},
+        wordListOverrides: normalizeWordListOverrides(saved.wordListOverrides),
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
         includeSubfolders: saved.includeSubfolders !== false,
         defaultRange: [0, 7, 30, 90, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
         noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
       };
-      configureAnalysis(this.preferences.wordGoal, this.preferences.customWords);
+      configureAnalysis(this.preferences.wordGoal, this.preferences.customWords, this.preferences.wordListOverrides);
     }, () => {});
     this.addSettingTab(new MorningPagesSettingsTab(this.app, this));
     this.registerView(STATS_VIEW, (leaf) => new WritingStatsView(leaf, this));
@@ -435,11 +321,12 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     const path = file.path;
     const { ctime, mtime, size } = file.stat;
     const before = this.records.get(path);
-    const analysisKey = JSON.stringify(this.preferences.customWords || {});
+    const analysisKey = JSON.stringify({ customWords: this.preferences.customWords || {}, wordListOverrides: this.preferences.wordListOverrides || {} });
     if (!force && before?.analysisKey === analysisKey && before?.ctime === ctime && before.mtime === mtime && before.size === size && before.date === date) return false;
     const text = await this.app.vault.cachedRead(file);
     if (this.stopped || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
-    this.records.set(path, { path, date, ctime, mtime, size, analysisKey, ...recordStats(analyzeWriting(noteBody(text), JSON.parse(analysisKey))) });
+    const wordSettings = JSON.parse(analysisKey);
+    this.records.set(path, { path, date, ctime, mtime, size, analysisKey, ...recordStats(analyzeWriting(noteBody(text), wordSettings.customWords, wordSettings.wordListOverrides)) });
     return true;
   }
 
@@ -475,7 +362,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async persist() {
     this.vocabularyCache.clear();
-    const data = { version: CACHE_VERSION, preferences: { ...this.preferences }, folderDateRules: Object.fromEntries(normalizeFolders(this.customFolders).map((folder) => [folder, { ...this.folderDateRules[folder] }])), customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
+    const data = { version: CACHE_VERSION, preferences: JSON.parse(JSON.stringify(this.preferences)), folderDateRules: Object.fromEntries(normalizeFolders(this.customFolders).map((folder) => [folder, { ...this.folderDateRules[folder] }])), customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
       await this.writeTail;
@@ -488,7 +375,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.refreshing) await this.refreshing;
     if (this.flushing) await this.flushing;
-    configureAnalysis(this.preferences.wordGoal, this.preferences.customWords);
+    configureAnalysis(this.preferences.wordGoal, this.preferences.customWords, this.preferences.wordListOverrides);
     await this.persist();
     await this.refreshHistory();
     if (this.activeFile) await this.inspect(this.activeFile);

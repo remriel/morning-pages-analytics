@@ -1,0 +1,141 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morning Pages settings verification</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  :root { color-scheme: light; --background-primary: #fffefa; --background-secondary: #f3f1eb; --text-normal: #262137; --text-muted: #625b70; --background-modifier-border: #d2cbd8; --interactive-accent: #6b48c3; }
+  body { background: var(--background-primary); color: var(--text-normal); font: 15px/1.5 Arial, sans-serif; margin: 0; }
+  body.dark { color-scheme: dark; --background-primary: #211f28; --background-secondary: #2b2834; --text-normal: #f2ecfa; --text-muted: #c3bacf; --background-modifier-border: #575063; --interactive-accent: #c0a0ff; }
+  body.phone { width: 390px; max-width: 100vw; }
+  body.narrow-pane #settings { width: 450px; }
+  #settings { max-width: 850px; padding: 24px; margin: 0 auto; }
+  .setting-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--background-modifier-border); }
+  .setting-item-info { flex: 1; }
+  .setting-item-control { display: flex; align-items: center; gap: 8px; }
+  .setting-item-description { color: var(--text-muted); }
+  button, input, select, textarea { font: inherit; color: var(--text-normal); background: var(--background-primary); border: 1px solid var(--background-modifier-border); border-radius: 4px; padding: 7px 10px; }
+  button { cursor: pointer; }
+  h2, h3, h4 { line-height: 1.3; }
+  #result { white-space: pre-wrap; margin: 20px; }
+  @media (max-width: 600px) { #settings { padding: 14px; } }
+</style>
+<main id="settings"></main>
+<pre id="result">PENDING</pre>
+<script>
+  const errors = [];
+  addEventListener("error", (event) => errors.push(event.message));
+  addEventListener("unhandledrejection", (event) => errors.push(String(event.reason)));
+  if (location.search.includes("dark")) document.body.classList.add("dark");
+  if (location.search.includes("phone")) document.body.classList.add("phone");
+  if (location.search.includes("narrow-pane")) document.body.classList.add("narrow-pane");
+  class FixtureSetting {
+    constructor(parent) {
+      this.settingEl = parent.appendChild(document.createElement("div")); this.settingEl.className = "setting-item";
+      const info = this.settingEl.appendChild(document.createElement("div")); info.className = "setting-item-info";
+      this.nameEl = info.appendChild(document.createElement("div")); this.nameEl.className = "setting-item-name";
+      this.descEl = info.appendChild(document.createElement("div")); this.descEl.className = "setting-item-description";
+      this.controlEl = this.settingEl.appendChild(document.createElement("div")); this.controlEl.className = "setting-item-control";
+    }
+    setName(value) { this.nameEl.textContent = value; return this; }
+    setDesc(value) { this.descEl.textContent = value; return this; }
+    control(tag, callback, type) {
+      const input = this.controlEl.appendChild(document.createElement(tag));
+      if (type) input.type = type;
+      const component = {
+        inputEl: input, selectEl: input,
+        setValue(value) { if (type === "checkbox") input.checked = value; else input.value = value; return this; },
+        setPlaceholder(value) { input.placeholder = value; return this; },
+        setButtonText(value) { input.textContent = value; return this; },
+        addOptions(options) { for (const [value, text] of Object.entries(options)) input.add(new Option(text, value)); return this; },
+        onChange(fn) { input.addEventListener(type === "checkbox" || tag === "select" ? "change" : "input", () => fn(type === "checkbox" ? input.checked : input.value)); return this; },
+        onClick(fn) { input.addEventListener("click", fn); return this; },
+      };
+      callback(component);
+      if (!input.hasAttribute("aria-label")) input.setAttribute("aria-label", this.nameEl.textContent);
+      return this;
+    }
+    addText(fn) { return this.control("input", fn, "text"); }
+    addTextArea(fn) { return this.control("textarea", fn); }
+    addDropdown(fn) { return this.control("select", fn); }
+    addToggle(fn) { return this.control("input", fn, "checkbox"); }
+    addButton(fn) { return this.control("button", fn, "button"); }
+  }
+  window.module = { exports: {} };
+  window.require = () => ({
+    ItemView: class {}, Plugin: class {}, Setting: FixtureSetting,
+    PluginSettingTab: class { constructor() { this.containerEl = document.querySelector("#settings"); } },
+  });
+</script>
+<script src="../../main.js"></script>
+<script>
+  (async () => {
+    const assert = (value, message) => { if (!value) throw new Error(message); };
+    const delay = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const plugin = {
+      ready: Promise.resolve(), preferences: { wordGoal: 750, customWords: { topics: { work: "litigation" } }, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" },
+      customFolders: ["Ledger"], folderDateRules: { Ledger: { source: "filename", formats: ["YYYY-MM-DD"] } },
+      historyViews: new Set(), persist() { this.saved = JSON.parse(JSON.stringify(this.preferences)); return Promise.resolve(); },
+      applyAnalysisSettings() { this.analysisUpdates = (this.analysisUpdates || 0) + 1; return this.persist(); },
+      applyFolderChange() { this.folderUpdates = (this.folderUpdates || 0) + 1; return this.persist(); },
+      scheduleFolderRefresh() { void this.persist(); }, drawHistory() {},
+    };
+    const tab = new (settings.createSettingsTab(window.require().PluginSettingTab, window.require().Setting))({}, plugin);
+    await tab.display();
+    const root = tab.containerEl;
+    const control = (label) => { const input = root.querySelector(`[aria-label="${label}"]`); assert(input, `Missing control: ${label}`); return input; };
+    const change = async (label, value) => { const input = control(label); input.value = value; input.dispatchEvent(new Event(input.tagName === "SELECT" ? "change" : "input", { bubbles: true })); await delay(); };
+    const nav = async (name) => { root.querySelector(`[data-section="${name}"]`).click(); await delay(); assert(root.querySelector(`[data-section="${name}"]`).getAttribute("aria-pressed") === "true", "Active section state missing"); };
+    assert(root.querySelectorAll("textarea").length === 0, "All category editors should not crowd the first page");
+    await change("Daily word goal", "300"); assert(plugin.preferences.wordGoal === 300, "Goal not saved");
+    await change("Daily word goal", "-1"); assert(plugin.preferences.wordGoal === 300 && control("Daily word goal").getAttribute("aria-invalid") === "true", "Invalid goal accepted");
+    await nav("words");
+    assert(document.activeElement.dataset.section === "words", "Navigation lost keyboard focus");
+    assert(root.querySelectorAll("textarea").length === 2, "Word editor should show only one category at a time");
+    assert(control("Work & learning base word list").value.includes("office"), "Defaults not visible for editing");
+    assert(control("Work & learning extra words").value === "litigation", "Existing additions lost");
+    await change("Work & learning base word list", "contract, client");
+    await change("Work & learning extra words", "litigation, contract");
+    assert(plugin.saved.wordListOverrides.topics.work === "contract, client", "Base list not persisted");
+    await change("Category", "health"); await change("Category", "work");
+    assert(control("Work & learning base word list").value === "contract, client", "Override lost after category switch");
+    await change("Work & learning base word list", "");
+    assert(plugin.saved.wordListOverrides.topics.work === "", "Clearing the list must not restore defaults");
+    await nav("history"); await nav("words");
+    assert(control("Work & learning base word list").value === "", "Empty override lost after navigation");
+    const restore = [...root.querySelectorAll("button")].find((button) => button.textContent === "Restore defaults");
+    restore.click(); await delay();
+    assert(!Object.hasOwn(plugin.preferences.wordListOverrides.topics || {}, "work"), "Reset should remove the override");
+    assert(control("Work & learning base word list").value.includes("office"), "Default list not restored");
+    assert(control("Work & learning extra words").value === "litigation, contract", "Reset removed extra words");
+    for (const [name, categories] of Object.entries(analysis.GROUPS)) {
+      await change("Category group", name);
+      for (const category of categories) { await change("Category", category.key); assert(control(`${category.label} base word list`), `Unreachable category: ${category.label}`); }
+    }
+    await nav("history"); await change("Default history range", "90"); await change("Note order within a day", "oldest");
+    assert(plugin.preferences.defaultRange === 90 && plugin.preferences.noteOrder === "oldest", "History controls regressed");
+    await nav("folders");
+    assert(root.querySelector("details").open, "Initial folder should be expanded");
+    const presets = [...root.querySelectorAll('input[type="checkbox"]')].filter((input) => input.getAttribute("aria-label") !== "Include subfolders");
+    assert(presets.length === 13, "Missing selectable format presets");
+    const september = control("September 13 2026"); september.checked = true; september.dispatchEvent(new Event("change")); await delay();
+    assert(plugin.folderDateRules.Ledger.formats.includes("MMMM D YYYY"), "Preset selection not saved");
+    await change("Folder 1 date source", "auto");
+    assert(root.textContent.includes("Automatic date recognition"), "Auto mode explanation missing");
+    const add = [...root.querySelectorAll("button")].find((button) => button.textContent === "Add folder"); add.click(); await delay();
+    await change("Folder 2 path", "Thoughts"); await change("Folder 2 date source", "creation");
+    assert(plugin.customFolders[1] === "Thoughts" && plugin.folderDateRules.Thoughts.source === "creation", "Adding folders regressed");
+    await nav("words"); await change("Category group", "topics"); await change("Category", "work");
+    clearTimeout(plugin.analysisTimer);
+    assert(errors.length === 0, `Uncaught errors: ${errors.join("; ")}`);
+    assert(document.documentElement.scrollWidth <= innerWidth + 1, "Horizontal overflow");
+    if (location.search.includes("phone")) assert(root.getBoundingClientRect().right <= 391, "Phone layout exceeds the screenshot viewport");
+    if (location.search.includes("narrow-pane")) {
+      assert(getComputedStyle(root.querySelector(".mpa-settings-nav")).gridTemplateColumns.split(" ").length === 2, "Narrow settings pane did not adapt inside a wide desktop window");
+      assert(getComputedStyle(control("Category").closest(".setting-item")).flexDirection === "column", "Narrow pane form rows should stack");
+    }
+    for (const field of root.querySelectorAll("textarea,select,input")) assert(field.getBoundingClientRect().width > 0, "Field is hidden or clipped");
+    document.querySelector("#result").textContent = "PASS: editable defaults, reset, migration, navigation, all categories, folder formats and responsive layout";
+    scrollTo(0, 0);
+  })().catch((error) => { document.querySelector("#result").textContent = `FAIL: ${error.stack || error}`; });
+</script>

@@ -4,31 +4,17 @@ const fs = require("node:fs");
 const vm = require("node:vm");
 const history = require("../src/history.js");
 const analysis = require("../src/analysis.js");
+const settings = require("../src/settings.js");
 
 test("folder history migrates, refreshes arbitrary notes, and retains creation dates after edits", async () => {
-  const rows = [];
-  class Setting {
-    constructor() { rows.push(this); }
-    setName(name) { this.name = name; return this; }
-    setDesc() { return this; }
-    addControl(callback) {
-      const control = { setValue() { return this; }, setPlaceholder() { return this; }, addOptions() { return this; }, setButtonText() { return this; }, onClick(fn) { this.change = fn; return this; }, onChange(fn) { this.change = fn; return this; } };
-      callback(control); this.control = control; return this;
-    }
-    addText(fn) { return this.addControl(fn); }
-    addTextArea(fn) { return this.addControl(fn); }
-    addToggle(fn) { return this.addControl(fn); }
-    addDropdown(fn) { return this.addControl(fn); }
-    addButton(fn) { return this.addControl(fn); }
-  }
   class Plugin {
     addSettingTab(tab) { this.tab = tab; } registerView() {} addCommand() {} addRibbonIcon() {} registerEvent() {}
     async loadData() { return { version: 2, customFolder: "Journal", entries: [] }; }
     async saveData(data) { this.saved = data; }
   }
   const sandbox = {
-    module: { exports: {} }, analysis, history, dashboard: {}, setTimeout, clearTimeout,
-    require: () => ({ Plugin, ItemView: class {}, PluginSettingTab: class {}, Setting,
+    module: { exports: {} }, analysis, history, settings, dashboard: {}, setTimeout, clearTimeout,
+    require: () => ({ Plugin, ItemView: class {}, PluginSettingTab: class {}, Setting: class {},
       moment: (value) => ({ isValid: () => /^2026-11-\d\d$/.test(value), format: () => value }),
       normalizePath: (value) => value, getFrontMatterInfo: () => ({ contentStart: 0 }) }),
   };
@@ -36,7 +22,7 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   const plugin = new sandbox.module.exports();
   const file = { path: "Journal/nested/My thoughts.md", extension: "md", stat: { ctime: new Date(2026, 10, 3, 12).getTime(), mtime: 1, size: 5 } };
   plugin.app = {
-    workspace: { on() {}, onLayoutReady() {} },
+    workspace: { on() {}, onLayoutReady() {}, getActiveViewOfType: () => null },
     vault: { configDir: ".obsidian", on() {}, getMarkdownFiles: () => [file],
       getAbstractFileByPath: (path) => path === file.path ? file : null,
       cachedRead: async () => "I feel happy",
@@ -75,15 +61,6 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   assert.equal(plugin.records.size, 0);
   assert.equal(plugin.saved.preferences.dateFormat, "DD-MM-YYYY");
   plugin.customFolders = ["Journal"];
-  plugin.folderDateRules.Journal = { source: "filename", formats: [] };
-  plugin.tab.containerEl = { empty: () => { rows.length = 0; } };
-  plugin.tab.display();
-  await rows.find((row) => row.name === "2026-11-10").control.change(true);
-  await rows.find((row) => row.name === "September 13 2026").control.change(true);
-  assert.deepEqual(Array.from(plugin.saved.folderDateRules.Journal.formats), ["YYYY-MM-DD", "MMMM D YYYY"]);
-  await rows.find((row) => row.name === "Folder 1 date source").control.change("auto");
-  assert.equal(plugin.saved.folderDateRules.Journal.source, "auto");
-  assert.ok(rows.some((row) => row.name === "Automatic date recognition"));
   plugin.folderDateRules.Journal = { source: "creation" };
   await plugin.applyFolderChange();
   assert.equal(plugin.records.get(file.path).topics.work, 0);
@@ -93,5 +70,28 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   plugin.preferences.customWords = {};
   await plugin.applyAnalysisSettings();
   assert.equal(plugin.records.get(file.path).topics.work, 0);
+  plugin.preferences.customWords = { topics: { work: "happy" } };
+  plugin.preferences.wordListOverrides = { feelings: { joy: "" } };
+  await plugin.applyAnalysisSettings();
+  await plugin.inspect(file);
+  assert.equal(plugin.records.get(file.path).feelings.joy, 0);
+  assert.equal(plugin.records.get(file.path).topics.work, 1);
+  assert.equal(plugin.live.stats.feelings.joy, 0);
+  assert.equal(plugin.saved.preferences.wordListOverrides.feelings.joy, "");
+  const persisted = JSON.parse(JSON.stringify(plugin.saved));
   plugin.onunload();
+  const restarted = new sandbox.module.exports();
+  restarted.app = plugin.app;
+  restarted.loadData = async () => persisted;
+  restarted.onload();
+  await restarted.ready;
+  assert.equal(restarted.preferences.wordListOverrides.feelings.joy, "");
+  await restarted.inspect(file);
+  assert.equal(restarted.live.stats.feelings.joy, 0);
+  delete restarted.preferences.wordListOverrides.feelings.joy;
+  await restarted.applyAnalysisSettings();
+  assert.equal(restarted.records.get(file.path).feelings.joy, 1);
+  assert.equal(restarted.records.get(file.path).topics.work, 1);
+  assert.equal(restarted.live.stats.feelings.joy, 1);
+  restarted.onunload();
 });

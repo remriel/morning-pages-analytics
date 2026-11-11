@@ -1,5 +1,20 @@
 # Progress
 
+## Current objective: editable defaults, clearer settings and release 0.5.1
+
+**Progress toward verified publication: 90%.** `[#########-]`
+
+- [x] Edit, replace, remove or clear base words for every category; retain separate additions.
+- [x] Restore built-in defaults for one category without deleting its additions.
+- [x] Update live analysis, cached history and persisted/reloaded overrides correctly.
+- [x] Organize settings into four sections with one category editor and expandable folders.
+- [x] Verify navigation, readable fields, accessible names, keyboard focus and responsive layouts in desktop/phone-width/dark/narrow-pane browser previews; inspect screenshots.
+- [x] npm test: 22 pass with browser checks required; npm run build, syntax and diff checks pass.
+- [ ] Publish exact 0.5.1 tag and verify release CI.
+- [ ] Verify release hashes, direct files and installation ZIP.
+
+Next: commit and push, publish 0.5.1, verify artifacts, then record publication. Native Obsidian settings interaction remains unverified.
+
 ## Current objective: publish 0.5.0
 
 **Progress toward verified publication: 100%.** `[##########]`

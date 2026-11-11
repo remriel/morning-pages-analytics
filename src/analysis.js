@@ -1,15 +1,32 @@
 const WORD_GOAL = 750;
 let configuredGoal = WORD_GOAL;
-let extraWords = {};
+let configuredWordLists = {};
 function getWordGoal() { return configuredGoal; }
-function configureAnalysis(goal, additions = {}) {
-  configuredGoal = Number.isSafeInteger(goal) && goal >= 1 ? goal : WORD_GOAL;
-  extraWords = {};
+function categoryWords(name, key, defaults, additions, overrides) {
+  const replacement = overrides?.[name]?.[key];
+  const added = additions?.[name]?.[key];
+  const base = typeof replacement === "string" ? frequenciesOf(replacement).keys() : defaults;
+  return new Set([...base, ...frequenciesOf(typeof added === "string" ? added : "").keys()]);
+}
+
+function normalizeWordListOverrides(overrides) {
+  const result = {};
   for (const [name, group] of Object.entries(GROUPS)) {
-    extraWords[name] = {};
     for (const { key } of group) {
-      const value = additions?.[name]?.[key];
-      extraWords[name][key] = new Set(frequenciesOf(typeof value === "string" ? value : "").keys());
+      const value = overrides?.[name]?.[key];
+      if (typeof value === "string") (result[name] ||= {})[key] = value;
+    }
+  }
+  return result;
+}
+
+function configureAnalysis(goal, additions = {}, overrides = {}) {
+  configuredGoal = Number.isSafeInteger(goal) && goal >= 1 ? goal : WORD_GOAL;
+  configuredWordLists = {};
+  for (const [name, group] of Object.entries(GROUPS)) {
+    configuredWordLists[name] = {};
+    for (const { key, words } of group) {
+      configuredWordLists[name][key] = categoryWords(name, key, words, additions, overrides);
     }
   }
 }
@@ -117,13 +134,17 @@ function rankKeywords(counts, limit = 40) {
   return [...counts].sort(([a, n], [b, m]) => m - n || a.localeCompare(b)).slice(0, limit);
 }
 
-function analyzeWriting(markdown, customWords) {
+function analyzeWriting(markdown, customWords, wordListOverrides) {
   const text = prose(markdown);
   const frequencies = frequenciesOf(text);
   const count = (set) => [...set].reduce((sum, token) => sum + (frequencies.get(token) ?? 0), 0);
   const hasWords = (part) => /[\p{L}\p{N}]/u.test(part);
   const breakdowns = Object.fromEntries(Object.entries(GROUPS).map(([name, group]) => [name,
-    Object.fromEntries(group.map(({ key, words }) => [key, count(new Set([...words, ...(customWords ? frequenciesOf(typeof customWords[name]?.[key] === "string" ? customWords[name][key] : "").keys() : extraWords[name]?.[key] || [])]))])),
+    Object.fromEntries(group.map(({ key, words }) => [key, count(
+      customWords !== undefined || wordListOverrides !== undefined
+        ? categoryWords(name, key, words, customWords, wordListOverrides)
+        : configuredWordLists[name]?.[key] || words,
+    )])),
   ]));
   return {
     words: [...frequencies.values()].reduce((sum, value) => sum + value, 0),
@@ -137,4 +158,4 @@ function analyzeWriting(markdown, customWords) {
   };
 }
 
-module.exports = { WORD_GOAL, getWordGoal, configureAnalysis, GROUPS, PAIRS, analyzeWriting, keywordCounts, rankKeywords };
+module.exports = { WORD_GOAL, getWordGoal, configureAnalysis, normalizeWordListOverrides, GROUPS, PAIRS, analyzeWriting, keywordCounts, rankKeywords };

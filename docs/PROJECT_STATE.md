@@ -1,5 +1,19 @@
 # Project State
 
+## 2026-11-10: editable base word lists and settings UI, 0.5.1
+
+- User expanded the category-word request to allow editing the default lists, then asked for a clearer settings UI and explicitly authorized publication when complete.
+- `src/analysis.js` keeps shipped `GROUPS` word sets unchanged. Optional `wordListOverrides[group][category]` strings replace the base for that category; absent keys use shipped defaults, while an empty string intentionally disables the base. Separate `customWords` additions are unioned with the effective base, normalized using the note tokenizer, and deduplicated. `configureAnalysis` compiles live lists; explicit analyzer arguments let indexing use captured settings safely.
+- `src/plugin.js` normalizes saved overrides without losing empty strings. Each history `analysisKey` includes both additions and base overrides, so edits/reset/restart invalidate stale counts. Preference writes now snapshot nested values. Cache schema stays 3; old analysis signatures trigger recount automatically. Existing additions are preserved.
+- `src/settings.js` is a factory receiving Obsidian's native settings components. The build includes it as a fourth internal module. Navigation divides settings into Writing, Word lists, History and Folders. A single category editor exposes the base, extra words and per-category Restore defaults (extra words are kept). Folder settings use expandable cards and retain automatic/manual/creation date modes and multiple presets.
+- CSS is scoped to `.mpa-settings`, uses theme colors for body fields and bold color accents for navigation. Media and container queries adapt phone screens and narrow desktop panes; fields have explicit accessible names, focus indicators and save/status messages.
+- npm test passes all 22 checks with browser checks required; npm run build, bundle syntax and diff checks pass. Runtime tests cover default-word removal, empty lists, live/history changes, persisted reload and reset; unit tests cover every category, normalization and duplicate handling. A browser harness exercises all settings sections, category switching/reset, prior additions, folder controls and four layouts: desktop, phone-width, dark and narrow desktop pane. Screenshots were inspected locally in `.qa/settings` (ignored).
+- Native Obsidian interaction and actual mobile hardware are still unverified. The browser harness uses native-component-compatible stubs and the production settings module, so do not describe these checks as a native-app test.
+
+## RESUME HERE (0.5.1)
+
+Code and requested checks complete. Publish 0.5.1, verify CI and downloaded assets/ZIP, then record completion. No monthly-note splitting was added.
+
 ## 2026-11-10: requested Reddit features, 0.5.0
 
 - Only two product changes: configurable positive whole-number daily word goal (750 default), and additive custom words for every existing category. All processing remains local; no network calls were added.

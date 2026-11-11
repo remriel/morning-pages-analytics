@@ -14,6 +14,8 @@
   window.require = () => ({
     ItemView: class { constructor(leaf) { this.contentEl = leaf.contentEl; this.app = leaf.app; } },
     Plugin: class {},
+    PluginSettingTab: class {},
+    Setting: class {},
     moment: () => ({ format: () => "2026-11-09" }),
   });
 </script>
