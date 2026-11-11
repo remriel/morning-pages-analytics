@@ -232,10 +232,25 @@ function createSettingsTab(PluginSettingTab, Setting) {
       card.addEventListener("toggle", () => { if (card.open) this.expandedFolders.add(index); else this.expandedFolders.delete(index); });
       const body = element(card, "div", "mpa-folder-body");
       const rule = this.folderRule(index);
-      new Setting(body).setName(`Folder ${index + 1}`).setDesc("Path inside your vault, such as Ledger/Journal.")
+      new Setting(body).setName(`Folder ${index + 1}`).setDesc("Start typing a vault folder to see suggestions, or enter a path manually.")
         .addText((text) => {
           text.setPlaceholder("Journal/Morning Pages").setValue(folder);
           labelInput(text.inputEl, `Folder ${index + 1} path`);
+          const suggestions = element(text.inputEl.parentElement, "datalist");
+          suggestions.id = `mpa-folder-suggestions-${index}`;
+          text.inputEl.setAttribute("list", suggestions.id);
+          const updateSuggestions = () => {
+            const folders = this.app.vault.getAllLoadedFiles()
+              .filter((file) => Array.isArray(file.children) && file.path && file.path !== "/")
+              .map((file) => file.path).sort((a, b) => a.localeCompare(b));
+            suggestions.replaceChildren(...folders.map((path) => {
+              const option = suggestions.ownerDocument.createElement("option");
+              option.value = path;
+              return option;
+            }));
+          };
+          updateSuggestions();
+          text.inputEl.addEventListener("focus", updateSuggestions);
           text.onChange((value) => {
             const previousRule = this.folderRule(index);
             this.plugin.customFolders[index] = value;

@@ -76,7 +76,7 @@
   window.module = { exports: {} };
   window.require = () => ({
     ItemView: class {}, Plugin: class {}, Setting: FixtureSetting,
-    PluginSettingTab: class { constructor() { this.containerEl = document.querySelector("#settings"); } },
+    PluginSettingTab: class { constructor(app) { this.app = app; this.containerEl = document.querySelector("#settings"); } },
   });
 </script>
 <script src="../../main.js"></script>
@@ -92,7 +92,9 @@
       applyFolderChange() { this.folderUpdates = (this.folderUpdates || 0) + 1; return this.persist(); },
       scheduleFolderRefresh() { void this.persist(); }, drawHistory() {},
     };
-    const tab = new (settings.createSettingsTab(window.require().PluginSettingTab, window.require().Setting))({}, plugin);
+    const files = [{ path: "/", children: [] }, { path: "Journal", children: [] }, { path: "Journal/Morning Pages", children: [] }, { path: "Empty folder", children: [] }, { path: "Journal/note.md" }];
+    const app = { vault: { getAllLoadedFiles: () => files } };
+    const tab = new (settings.createSettingsTab(window.require().PluginSettingTab, window.require().Setting))(app, plugin);
     await tab.display();
     const root = tab.containerEl;
     const control = (label) => { const input = root.querySelector(`[aria-label="${label}"]`); assert(input, `Missing control: ${label}`); return input; };
@@ -152,6 +154,15 @@
     await change("Folder 1 date source", "auto");
     assert(root.textContent.includes("Automatic date recognition"), "Auto mode explanation missing");
     const add = [...root.querySelectorAll("button")].find((button) => button.textContent === "Add folder"); add.click(); await delay();
+    const folderInput = control("Folder 2 path");
+    const options = () => [...folderInput.list.options].map((option) => option.value);
+    assert(options().includes("Journal/Morning Pages") && options().includes("Empty folder"), "Folder suggestions should include nested and empty folders");
+    assert(!options().includes("Journal/note.md") && !options().includes("/"), "Suggestions must not include files or the vault root");
+    files.push({ path: "New folder", children: [] });
+    folderInput.dispatchEvent(new Event("focus"));
+    assert(options().includes("New folder"), "Folder suggestions should refresh on focus");
+    await change("Folder 2 path", "Journal/Morning Pages");
+    assert(plugin.customFolders[1] === "Journal/Morning Pages", "Suggested path was not applied");
     await change("Folder 2 path", "Thoughts"); await change("Folder 2 date source", "creation");
     assert(plugin.customFolders[1] === "Thoughts" && plugin.folderDateRules.Thoughts.source === "creation", "Adding folders regressed");
     await nav("words"); await change("Category group", "topics"); await change("Category", "work");

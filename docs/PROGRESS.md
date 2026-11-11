@@ -1,5 +1,14 @@
 # Progress
 
+## Current objective: folder autocomplete and release 0.5.4
+
+**Progress: 60%.** `[######----]`
+
+- [x] Suggest vault folders as the user types; keep manual paths.
+- [ ] Run tests and publish the release.
+- [ ] Verify the release and update the handoff.
+
+
 ## Current objective: 14/60/180 day ranges and period navigation, 0.5.3
 
 **Progress: 100%.** `[##########]`

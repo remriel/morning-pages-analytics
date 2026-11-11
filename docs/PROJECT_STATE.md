@@ -1,5 +1,14 @@
 # Project State
 
+## 2026-11-10: folder autocomplete, 0.5.4
+
+Folder path fields use a native datalist populated from loaded vault folders, including nested and empty folders. Lists refresh on focus, exclude the vault root and files, and retain manual path entry and existing persistence. Browser harness covers selection and refresh; native Obsidian and mobile are unverified.
+
+## RESUME HERE (0.5.4)
+
+Verify the implementation and publish version 0.5.4.
+
+
 ## 2026-11-10: history ranges and navigation, 0.5.3
 
 History and default settings include 14, 60 and 180 days. Finite ranges have previous/next buttons moving by their length; All and Custom disable those buttons. Changing the range resets the offset. Native Obsidian interaction remains unverified.

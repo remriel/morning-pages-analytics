@@ -62,9 +62,9 @@ jobs:
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
             --notes "$(cat <<EOF
-          Choose 14-day, 60-day and 180-day history ranges and move between periods with the new arrows.
+          Add writing folders faster with suggestions from your vault as you type.
 
-          **History navigation:** Select a finite range and use the previous and next arrows to move by that many days.
+          **Folder suggestions:** In Folders, start typing a folder path and select a matching vault folder. Manual paths remain available.
 
           Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
 

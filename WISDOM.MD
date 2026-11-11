@@ -1,5 +1,12 @@
 # Wisdom
 
+## 2026-11-10 — folder autocomplete
+
+1. Least confident: native datalist behavior on mobile Obsidian; verify on a device.
+2. Biggest gap: empty and nested folders should appear even when they contain no Markdown notes.
+3. Highest-impact assumption: choosing a suggestion should use the existing automatic folder refresh and date-source behavior; revisit if a separate confirmation is desired.
+
+
 ## 2026-11-10 — history period navigation
 
 Published 0.5.3; all 22 tests and release CI passed.
