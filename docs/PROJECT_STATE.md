@@ -1,5 +1,16 @@
 # Project State
 
+## 2026-11-12: public documentation refresh
+
+- Reconciled the clean local checkout with origin/main at e7831ee and confirmed 0.5.4 is the latest published release.
+- Reorganized README around the product overview, download/install, first use, live/history features, customization, folder date modes, local data, and development. Documented preset-period arrows, folder autocomplete, exact matching, and the one-file/one-day limit. Removed the duplicate banner and repaired the settings-path text.
+- GitHub repository description was updated and read back successfully: local writing analytics for Obsidian, live stats, word clouds, goal streaks, editable word lists, and history across Daily Notes and journal folders. No runtime or release-version changes are part of this task.
+- Source references: src/plugin.js commands/index/preferences, src/settings.js labels and controls, src/history.js date matching/cache, src/dashboard.js ranges, manifest.json compatibility, and the release workflow's installation ZIP.
+
+## RESUME HERE (documentation refresh)
+
+Review the newest section in docs/PROGRESS.md for documentation verification/publication state. Plugin release remains 0.5.4. Native settings and real mobile behavior retain their existing verification limits; documentation work does not resolve them.
+
 ## 2026-11-10: folder autocomplete, 0.5.4
 
 Folder path fields use a native datalist populated from loaded vault folders, including nested and empty folders. Lists refresh on focus, exclude the vault root and files, and retain manual path entry and existing persistence. Browser harness covers selection and refresh; native Obsidian and mobile are unverified.

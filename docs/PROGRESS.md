@@ -1,5 +1,17 @@
 # Progress
 
+## Current objective: refresh README and GitHub description (2026-11-12)
+
+**Progress toward verified publication: 100%.** `[##########]`
+
+- [x] Read project/shared notes, inspect Git state, and reconcile with the current source and latest release 0.5.4.
+- [x] Rewrite README with product-first copy, install instructions, commands, current features, customization, privacy, and development.
+- [x] Preserve existing screenshots, support link, licensing, and known behavioral limits.
+- [x] Check all five local Markdown links/assets and UTF-8 text, review the diff, and update/read back the GitHub description.
+- [x] Publish the documentation to main; final delivery checks compare the remote commit and README with the local files.
+
+Implementation: documentation only; runtime code and version unchanged. Blockers: none. Verification: source/release cross-check, all local README targets exist, UTF-8 check, git diff --check, and repository-description readback. Runtime tests were not run for this prose-only change. No implementation steps remain; native Obsidian/mobile checks retain their previous limits.
+
 ## Current objective: folder autocomplete and release 0.5.4
 
 **Progress: 100%.** `[##########]`

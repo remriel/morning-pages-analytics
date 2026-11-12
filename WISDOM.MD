@@ -97,3 +97,9 @@ The user confirmed they own the code and want it open source. I chose the MIT li
 1. **Least confident.** How the chart layout feels on a phone screen. I would review labels and tap targets in the mobile app.
 2. **Biggest gap.** Historical note files carry no edit timing. I would gather timing during future writing sessions before adding a historical pace chart.
 3. **Highest-impact assumption.** Public examples should use synthetic writing. I would replace them only after checking another sample has no private details.
+
+## 2026-11-12 - README and repository description
+
+1. **Least confidence:** Native mobile behavior remains unverified. I would test the released plugin on a real device before expanding compatibility claims.
+2. **Biggest gap:** Category charts count vocabulary, and history assigns one date per file. I made these limits explicit so readers can judge whether the plugin suits their writing.
+3. **Highest-impact assumption:** The requested update concerns public project documentation for the current release. If a different audience or positioning was intended, I would revise the opening and feature emphasis.
