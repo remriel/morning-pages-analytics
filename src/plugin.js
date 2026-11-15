@@ -283,10 +283,24 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   }
 
   refreshHistory(force = false) {
-    if (this.refreshing) return this.refreshing;
-    this.refreshing = this.rebuildHistory(force).catch(() => {
-      this.status = "Could not read Daily Notes settings. Refresh to retry.";
-    }).finally(() => {
+    if (this.stopped) return Promise.resolve();
+    if (this.refreshing) {
+      this.refreshRequested = true;
+      this.forceRefreshRequested ||= force;
+      return this.refreshing;
+    }
+    this.refreshing = (async () => {
+      do {
+        this.refreshRequested = false;
+        this.forceRefreshRequested = false;
+        try {
+          await this.rebuildHistory(force);
+        } catch {
+          this.status = "Could not read Daily Notes settings. Refresh to retry.";
+        }
+        force = this.forceRefreshRequested;
+      } while (this.refreshRequested && !this.stopped);
+    })().finally(() => {
       this.refreshing = null;
       if (!this.stopped) {
         this.drawHistory();
@@ -329,7 +343,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     }
     if (this.stopped) return;
     this.status = failed ? `${failed} daily ${failed === 1 ? "note could" : "notes could"} not be read.` : "";
-    if (changed) await this.persist();
+    if (changed || this.cacheSaveFailed) await this.persist();
     if (this.activeFile && this.statsViews.size) void this.inspect(this.activeFile);
   }
 
@@ -373,7 +387,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       return date ? this.indexFile(file, date, true) : this.records.delete(path);
     }));
     if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
-    if (!this.stopped && results.some((result) => result.status === "fulfilled" && result.value)) await this.persist();
+    if (!this.stopped && (this.cacheSaveFailed || results.some((result) => result.status === "fulfilled" && result.value))) await this.persist();
   }
 
   async persist() {
@@ -382,7 +396,9 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
       await this.writeTail;
+      this.cacheSaveFailed = false;
     } catch {
+      this.cacheSaveFailed = true;
       this.status = "The history cache could not be saved. Refresh to retry.";
     }
   }

@@ -1,3 +1,9 @@
+## 2026-11-15 — reliability release
+
+1. Least confident: native Obsidian/device and live-provider behavior. I would verify these in an isolated test vault before claiming native coverage.
+2. Biggest gap: a passing audit cannot prove the absence of every bug. I would keep regression tests and investigate new reproducible reports.
+3. Largest assumption: publish means GitHub plugin releases, with unchanged saved scores preserved on provider failure. If a different distribution or overwrite policy is intended, I would adjust that explicitly.
+
 # Wisdom
 
 ## 2026-11-14 — excluded folders, 0.6.0 local release

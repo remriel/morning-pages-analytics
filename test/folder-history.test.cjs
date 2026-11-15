@@ -93,6 +93,16 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   assert.equal(restarted.records.get(file.path).feelings.joy, 1);
   assert.equal(restarted.records.get(file.path).topics.work, 1);
   assert.equal(restarted.live.stats.feelings.joy, 1);
+  const save = restarted.saveData.bind(restarted);
+  let writes = 0;
+  restarted.saveData = async data => {
+    if (++writes === 1) throw new Error("temporary storage failure");
+    await save(data);
+  };
+  await restarted.persist();
+  assert.match(restarted.status, /could not be saved/);
+  await restarted.refreshHistory();
+  assert.equal(writes, 2, "refresh retries a failed cache write even with unchanged notes");
   restarted.onunload();
 });
 

@@ -1,3 +1,19 @@
+# Progress — release verification (2026-11-15)
+
+Release candidate 0.6.1 verified locally; publication and remote asset verification remain.
+
+Progress: 90% toward this verified fix release.
+
+All 27 tests passed with MPA_REQUIRE_BROWSER=1 (no skips), including desktop/mobile-width browser fixtures, refresh concurrency and failed-save retry regressions.
+
+Implementation: Queued refreshes retain force, survive an initial scan failure, and stop on unload. Failed cache writes retry on unchanged refreshes.
+
+## RESUME HERE
+
+Push the reviewed commit, run the existing release workflow, monitor CI, then download and verify every release asset. Do not mark publication complete until verified.
+
+---
+
 # Progress
 
 ## Current objective: verify publication of Morning Pages Analytics 0.6.0
