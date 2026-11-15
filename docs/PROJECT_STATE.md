@@ -1,5 +1,22 @@
 # Project State
 
+## 2026-11-14: excluded folders, 0.6.0 local release
+
+- The previous release is 0.5.4. `manifest.json`, `package.json`, and `package-lock.json` now consistently identify the candidate as 0.6.0.
+- Folders now has an **Excluded folders** multiline setting. Normalized vault-relative paths exclude Markdown files under those folders, including nested folders, Daily Notes and additional writing folders. Excluded files are pruned from loaded records, omitted from history indexing and word-cloud reads, and suppressed from active-note live analysis. Removing an exclusion makes matching files eligible again.
+- `docs/RELEASE_NOTES_0.6.0.md` is the release copy. The README explains exclusion paths and their capitalization requirement. `.github/workflows/publish-release.yml` now requires a version-matched release notes file and passes it to `gh release create`; it keeps the existing direct files, screenshots, banner and installation ZIP assets.
+- Local verification: `npm run build` exited 0. `npm test` exited 0; direct runs of the individual test files show 22 tests passed and the browser-only settings and history-scroll tests skipped because Chrome/Chromium is unavailable. Native Obsidian desktop/mobile behavior is unverified.
+- **Release tag state:** the release commit is at local `HEAD`; local tags `v0.6.0` and `0.6.0` both point to it. The numeric tag matches `manifest.json` as required by the workflow and Obsidian's [release documentation](https://docs.obsidian.md/plugins/releasing/submit-plugin). Push only the numeric tag; the `v` tag is a local alias. Remote branch/tag/release state has not been queried, and nothing has been pushed or published.
+- Scope note: the fallback/Groq changes described in the workspace-level `CHANGES.md` belong to the separate `automatic-mood-history` repository, not this release. That feature's fallback uses built-in word lists only (not custom lists), and “Grok” was interpreted as Groq there; it is not part of Morning Pages Analytics 0.6.0.
+
+### Prepared release notes
+
+Morning Pages Analytics 0.6.0 adds multiline excluded-folder paths under **Settings → Morning Pages Analytics → Folders**. Excluding a folder also excludes its descendants and applies to Daily Notes and additional writing folders. Excluded notes leave history totals and word clouds and do not display live stats when open. Removing the exclusion makes eligible notes available again. See [RELEASE_NOTES_0.6.0.md](RELEASE_NOTES_0.6.0.md).
+
+## RESUME HERE (0.6.0 publication)
+
+Follow `../../RELEASE_STEPS.md`. First query the remote `main` and numeric `0.6.0` tag and check whether the GitHub release already exists; reconcile unexpected targets before publishing. Push `main`, then push numeric tag `0.6.0` (do not push `v0.6.0`). Monitor the workflow: it runs tests/build, packages the install ZIP, and creates the release using `docs/RELEASE_NOTES_${VERSION}.md`. Verify the published tag target, release notes and assets. Local browser settings/history checks skipped because Chrome/Chromium was unavailable; native Obsidian desktop/mobile behavior remains unverified and is an optional follow-up.
+
 ## 2026-11-12: public documentation refresh
 
 - Reconciled the clean local checkout with origin/main at e7831ee and confirmed 0.5.4 is the latest published release.
