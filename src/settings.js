@@ -200,9 +200,9 @@ function createSettingsTab(PluginSettingTab, Setting) {
     }
 
     renderFolders(panel) {
-      this.heading(panel, "Choose what goes into history", "Daily Notes are included automatically. Add other folders for journals, imported entries or notes with any title. Each folder can use its own date source.");
+      this.heading(panel, "Choose what goes into history", "Daily Notes are included automatically unless excluded. Add other folders for journals, imported entries or notes with any title. Each folder can use its own date source.");
       const daily = element(panel, "div", "mpa-settings-card");
-      element(daily, "h4", "", "Daily Notes · always included");
+      element(daily, "h4", "", "Daily Notes · included automatically");
       new Setting(daily).setName("Daily Notes filename format").setDesc("Leave blank to follow Obsidian's Daily Notes settings. For example YYYY-MM-DD. This can also be inherited by your other folders.")
         .addText((text) => {
           text.setPlaceholder("Use Daily Notes settings").setValue(this.plugin.preferences.dateFormat);
@@ -214,6 +214,18 @@ function createSettingsTab(PluginSettingTab, Setting) {
           this.plugin.preferences.includeSubfolders = value;
           await this.plugin.applyFolderChange();
         }));
+      const excluded = new Setting(panel).setName("Excluded folders")
+        .setDesc("One vault folder per line. Notes in these folders and their subfolders are excluded, including Daily Notes.");
+      excluded.settingEl.classList.add("mpa-word-field");
+      excluded.addTextArea((text) => {
+        text.setPlaceholder("Journal/Private\nDaily/Archive").setValue((this.plugin.preferences.excludedFolders || []).join("\n"));
+        text.inputEl.rows = 3;
+        labelInput(text.inputEl, "Excluded folders");
+        text.onChange((value) => {
+          this.plugin.preferences.excludedFolders = normalizeFolders(value.split(/\r?\n/));
+          this.plugin.scheduleFolderRefresh();
+        });
+      });
       new Setting(panel).setName("Additional writing folders").setDesc("Expand a folder below to change its path or date source. Changes refresh history automatically.")
         .addButton((button) => button.setButtonText("Add folder").onClick(async () => {
           const index = this.plugin.customFolders.push("") - 1;
