@@ -1,6 +1,6 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
 const { analyzeWriting, keywordCounts, configureAnalysis, normalizeWordListOverrides } = analysis;
-const { normalizeFolderRule, CACHE_VERSION, includedDate, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
+const { normalizeFolderRule, CACHE_VERSION, includedDate, isExcluded, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
@@ -121,7 +121,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   daily = DEFAULT_DAILY;
   customFolders = [];
   folderDateRules = {};
-  preferences = { wordGoal: 750, customWords: {}, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, defaultRange: 30, noteOrder: "newest" };
+  preferences = { wordGoal: 750, customWords: {}, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, excludedFolders: [], defaultRange: 30, noteOrder: "newest" };
   folderTimer = null;
   activeFile = null;
   revision = 0;
@@ -144,9 +144,11 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         wordListOverrides: normalizeWordListOverrides(saved.wordListOverrides),
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
         includeSubfolders: saved.includeSubfolders !== false,
+        excludedFolders: normalizeFolders(saved.excludedFolders || []),
         defaultRange: [0, 7, 14, 30, 60, 90, 180, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
         noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
       };
+      for (const path of this.records.keys()) if (isExcluded({ path }, this.preferences.excludedFolders)) this.records.delete(path);
       configureAnalysis(this.preferences.wordGoal, this.preferences.customWords, this.preferences.wordListOverrides);
     }, () => {});
     this.addSettingTab(new MorningPagesSettingsTab(this.app, this));
@@ -169,7 +171,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
     this.registerEvent(vault.on("modify", (file) => {
       if (file === this.activeFile && this.statsViews.size) void this.inspect(file);
-      if (includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules)) this.queue(file.path);
+      if (includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders)) this.queue(file.path);
     }));
     this.registerEvent(vault.on("delete", (file) => {
       if (file === this.activeFile) void this.inspect(null);
@@ -212,10 +214,18 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   async inspect(file, editor) {
     clearTimeout(this.statsTimer);
     const revision = ++this.revision;
+    await this.ready;
+    if (revision !== this.revision || this.stopped) return;
     if (this.activeFile !== file) this.editSession = null;
     this.activeFile = file?.extension === "md" ? file : null;
     if (!this.activeFile) {
       this.live = {};
+      this.drawStats();
+      return;
+    }
+    if (isExcluded(file, this.preferences.excludedFolders)) {
+      this.editSession = null;
+      this.live = { name: file.basename, message: "This note is in an excluded folder." };
       this.drawStats();
       return;
     }
@@ -228,13 +238,19 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       const activeEditor = view?.file === file && view.getMode() === "source" ? view.editor : null;
       const text = (editor ?? activeEditor)?.getValue() ?? await this.app.vault.cachedRead(file);
       if (revision !== this.revision) return;
+      if (isExcluded(file, this.preferences.excludedFolders)) {
+        this.editSession = null;
+        this.live = { name: file.basename, message: "This note is in an excluded folder." };
+        this.drawStats();
+        return;
+      }
       const stats = analyzeWriting(noteBody(text));
       if (editor && this.editSession) this.editSession.current = stats.words;
       const session = this.editSession;
       const pace = session?.activeMs >= 3000 && session.current > session.start
         ? { minutes: session.activeMs / 60000, wordsPerMinute: (session.current - session.start) * 60000 / session.activeMs }
         : null;
-      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules), stats, pace };
+      this.live = { name: file.basename, date: includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders), stats, pace };
     } catch {
       if (revision !== this.revision) return;
       this.live = { name: file.basename, message: "Could not read the open note." };
@@ -297,7 +313,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.flushing) await this.flushing;
     this.daily = await this.dailySettings();
-    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules)]).filter(([, date]) => date);
+    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders)]).filter(([, date]) => date);
     const eligible = new Set(candidates.map(([file]) => file.path));
     let changed = false;
     let failed = 0;
@@ -324,7 +340,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     const analysisKey = JSON.stringify({ customWords: this.preferences.customWords || {}, wordListOverrides: this.preferences.wordListOverrides || {} });
     if (!force && before?.analysisKey === analysisKey && before?.ctime === ctime && before.mtime === mtime && before.size === size && before.date === date) return false;
     const text = await this.app.vault.cachedRead(file);
-    if (this.stopped || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
+    if (this.stopped || isExcluded(file, this.preferences.excludedFolders) || this.app.vault.getAbstractFileByPath(path) !== file || file.stat.mtime !== mtime || file.stat.size !== size) return false;
     const wordSettings = JSON.parse(analysisKey);
     this.records.set(path, { path, date, ctime, mtime, size, analysisKey, ...recordStats(analyzeWriting(noteBody(text), wordSettings.customWords, wordSettings.wordListOverrides)) });
     return true;
@@ -353,7 +369,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     const results = await Promise.allSettled(paths.map((path) => {
       const file = this.app.vault.getAbstractFileByPath(path);
-      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules);
+      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders);
       return date ? this.indexFile(file, date, true) : this.records.delete(path);
     }));
     if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
@@ -398,9 +414,9 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     for (let index = 0; index < entries.length && !this.stopped; index += 8) {
       const results = await Promise.allSettled(entries.slice(index, index + 8).map(async (entry) => {
         const file = this.app.vault.getAbstractFileByPath(entry.path);
-        if (!file || file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
+        if (!file || isExcluded(file, this.preferences.excludedFolders) || file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
         const text = await this.app.vault.cachedRead(file);
-        if (file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
+        if (isExcluded(file, this.preferences.excludedFolders) || file.stat.mtime !== entry.mtime || file.stat.size !== entry.size) return false;
         combineKeywords(counts, keywordCounts(noteBody(text)));
         words += entry.words;
         return true;

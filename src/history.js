@@ -39,7 +39,12 @@ function normalizeFolders(folders) {
     .map((folder) => folder.trim().replace(/^\/+|\/+$/g, "")).filter(Boolean))];
 }
 
-function includedDate(file, daily, folders, moment, includeSubfolders = true, folderDateRules = {}) {
+function isExcluded(file, folders) {
+  return typeof file?.path === "string" && normalizeFolders(folders).some((folder) => file.path.startsWith(`${folder}/`));
+}
+
+function includedDate(file, daily, folders, moment, includeSubfolders = true, folderDateRules = {}, excludedFolders = []) {
+  if (isExcluded(file, excludedFolders)) return null;
   const dailyDay = dailyDate(file, daily, moment);
   if (dailyDay) return dailyDay;
   if (file?.extension !== "md" || file.path === daily.template) return null;
@@ -161,4 +166,4 @@ function seriesBuckets(window) {
   return { first, last, step, buckets: [...buckets.values()] };
 }
 
-module.exports = { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, dailyDate, includedDate, normalizeFolders, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };
+module.exports = { DATE_FORMAT_PRESETS, normalizeFolderRule, CACHE_VERSION, dailyDate, includedDate, isExcluded, normalizeFolders, ordinal, isoDay, validDay, recordStats, loadRecords, groupDays, historyWindow, previousWindow, summarizeDays, seriesBuckets, combineKeywords };

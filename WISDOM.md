@@ -1,5 +1,13 @@
 # Wisdom
 
+## 2026-11-14 — excluded folders, 0.6.0 local release
+
+The excluded-folder feature is implemented and locally verified. The local release commit and both tags (`v0.6.0` and `0.6.0`) are at `HEAD`; no remote publication has been verified.
+
+1. **What are you least confident about right now? What would you do differently?** The settings and active-note message have not been checked in a live Obsidian app. The two browser-only settings/history checks skipped because Chrome or Chromium is unavailable. I would verify those views in a disposable Obsidian vault before claiming native UI coverage.
+2. **What is the biggest thing the user may be missing? What would you do differently?** Exclusion paths must match the vault folder's spelling and capitalization; each path also excludes nested folders and Daily Notes. I documented that behavior in the README and release notes so a path mismatch is easier to diagnose.
+3. **Which assumption, if wrong, would change the answer most? What would you do differently?** The local `v0.6.0` alias is retained while the numeric `0.6.0` tag matches `manifest.json` and triggers the release workflow when pushed. Remote branch/tag/release state is still unknown. I would query it and confirm targets before pushing `main` and then the numeric tag, following `../RELEASE_STEPS.md`. Publication, remote CI, and asset verification remain undone. [Obsidian release documentation](https://docs.obsidian.md/plugins/releasing/submit-plugin)
+
 ## 2026-11-10 — folder autocomplete
 
 Published 0.5.4; all 22 tests, CI, and nine asset digests passed.

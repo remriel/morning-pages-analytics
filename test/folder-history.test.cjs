@@ -95,3 +95,75 @@ test("folder history migrates, refreshes arbitrary notes, and retains creation d
   assert.equal(restarted.live.stats.feelings.joy, 1);
   restarted.onunload();
 });
+
+test("excluded folders remove cached, live, daily and nested notes from all history aggregates", async () => {
+  class Plugin {
+    addSettingTab() {} registerView() {} addCommand() {} addRibbonIcon() {} registerEvent() {}
+    async loadData() { return { customFolders: ["Journal", "Journal Extra"], entries: [] }; }
+    async saveData(data) { this.saved = data; }
+  }
+  const sandbox = { module: { exports: {} }, analysis, history, settings, dashboard: {}, setTimeout, clearTimeout,
+    require: () => ({ Plugin, ItemView: class {}, PluginSettingTab: class {}, Setting: class {},
+      moment: require("moment"), normalizePath: value => value, getFrontMatterInfo: () => ({ contentStart: 0 }) }) };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../src/plugin.js"), "utf8"), sandbox);
+  const make = (path, text) => ({ path, basename: path.split("/").at(-1).replace(/\.md$/, ""), extension: "md", text,
+    stat: { ctime: new Date(2026, 10, 3, 12).getTime(), mtime: 1, size: text.length } });
+  const files = [
+    make("Daily/2026-11-03.md", "happy privateword work"),
+    make("Journal/Private/nested/day.md", "sad secretword money"),
+    make("Journal/Public/day.md", "happy publicword work"),
+    make("Journal Extra/day.md", "joy siblingword family")
+  ];
+  const reads = [];
+  const plugin = new sandbox.module.exports();
+  plugin.app = { workspace: { on() {}, onLayoutReady() {}, getActiveViewOfType: () => null },
+    vault: { configDir: ".obsidian", on() {}, getMarkdownFiles: () => files,
+      getAbstractFileByPath: path => files.find(file => file.path === path),
+      cachedRead: async file => { reads.push(file.path); return file.text; },
+      adapter: { exists: async () => true, read: async () => JSON.stringify({ folder: "Daily", format: "YYYY-MM-DD" }) } } };
+  plugin.onload(); await plugin.ready; await plugin.refreshHistory();
+  assert.equal(plugin.records.size, 4);
+  let draws = 0; plugin.historyViews.add({ draw: () => draws++, disposeCharts() {} });
+  plugin.preferences.excludedFolders = ["Daily", "Journal/Private"];
+  await plugin.applyFolderChange();
+  assert(draws > 0, "changing exclusions redraws open history");
+  assert.deepEqual([...plugin.records.keys()].sort(), ["Journal Extra/day.md", "Journal/Public/day.md"]);
+  const days = history.groupDays(plugin.records.values());
+  const totals = history.summarizeDays(days, "2026-11-03");
+  assert.equal(totals.words, 6);
+  assert.equal(totals.feelings.sadness, 0);
+  assert.equal(totals.feelings.joy, 2);
+  assert.equal(totals.topics.money, 0);
+  assert.equal(totals.topics.work, 1);
+  const vocab = await plugin.vocabulary({ start: "2026-11-03", end: "2026-11-03", days });
+  assert(!vocab.counts.has("privateword") && !vocab.counts.has("secretword"));
+  assert(vocab.counts.has("publicword") && vocab.counts.has("siblingword"));
+  const before = reads.length;
+  await plugin.updatePaths([files[0].path, files[1].path]);
+  await plugin.inspect(files[1]);
+  assert.equal(reads.length, before, "excluded files are not indexed or live analyzed");
+  assert.equal(plugin.live.message, "This note is in an excluded folder.");
+  assert(!plugin.live.stats);
+  assert.deepEqual(JSON.parse(JSON.stringify(plugin.saved.preferences.excludedFolders)), ["Daily", "Journal/Private"]);
+  const persisted = JSON.parse(JSON.stringify(plugin.saved));
+  // A stale cached entry is filtered as soon as preferences are loaded.
+  persisted.entries.push({ path: files[1].path, date: "2026-11-03", words: 99 });
+  const restarted = new sandbox.module.exports(); restarted.app = plugin.app; restarted.loadData = async () => persisted;
+  restarted.onload(); await restarted.ready;
+  assert(!restarted.records.has(files[1].path));
+  restarted.preferences.excludedFolders = [];
+  await restarted.applyFolderChange();
+  assert.equal(restarted.records.size, 4, "removing an exclusion restores indexing");
+  // Exclusion changes while a read is in flight must not publish live stats.
+  let finishRead, readStarted;
+  const started = new Promise(resolve => { readStarted = resolve; });
+  restarted.app.vault.cachedRead = () => { readStarted(); return new Promise(resolve => { finishRead = resolve; }); };
+  const inspection = restarted.inspect(files[2]);
+  await started;
+  restarted.preferences.excludedFolders = ["Journal/Public"];
+  finishRead(files[2].text);
+  await inspection;
+  assert.equal(restarted.live.message, "This note is in an excluded folder.");
+  assert(!restarted.live.stats, "in-flight reads cannot restore excluded statistics");
+  restarted.onunload(); plugin.onunload();
+});

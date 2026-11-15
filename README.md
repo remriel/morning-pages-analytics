@@ -70,7 +70,7 @@ Under **Folders**, select **Add folder** and enter a vault-relative path such as
 
 Filename modes skip nonmatching or ambiguous dates without falling back to timestamps. For example, automatic mode skips `03-04-2026`; choose only the intended day-first or month-first format to resolve it. Daily Notes retain filename-date precedence. For overlapping additional folders, the most specific folder wins.
 
-Folder changes refresh history automatically after typing settles. Subfolders are included by default; settings also offer a subfolder toggle, a Daily Notes filename-format override, a default history range, and newest/oldest creation-time order within a day. Use **Remove** to stop tracking an additional folder.
+Folder changes refresh history automatically after typing settles. To leave folders out of tracking, enter one vault-relative path per line under **Excluded folders**, using the same spelling and capitalization as the folder in the vault. Exclusions also apply to nested folders and Daily Notes. Subfolders are included by default; settings also offer a subfolder toggle, a Daily Notes filename-format override, a default history range, and newest/oldest creation-time order within a day. Use **Remove** to stop tracking an additional folder.
 
 Creation-date entries keep their calendar date when their text is edited. Copying or syncing files can reset creation timestamps, so those dates may differ from when the writing was originally authored. Notes without valid creation timestamps are skipped in that mode. History assigns each file to one calendar day; it does not split a running monthly note into daily sections.
 
