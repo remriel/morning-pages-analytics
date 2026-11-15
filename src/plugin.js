@@ -1,11 +1,24 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
 const { analyzeWriting, keywordCounts, configureAnalysis, normalizeWordListOverrides } = analysis;
-const { normalizeFolderRule, CACHE_VERSION, includedDate, isExcluded, normalizeFolders, recordStats, loadRecords, combineKeywords } = history;
+const { normalizeFolderRule, CACHE_VERSION, includedDate, isExcluded, normalizeFolders, recordStats, loadRecords, combineKeywords, validDay } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
 const HISTORY_VIEW = "morning-pages-history";
 const DEFAULT_DAILY = { folder: "", format: "YYYY-MM-DD", template: "" };
+const HISTORY_RANGE_VALUES = [0, 7, 14, 30, 60, 90, 180, 365];
+
+function savedHistoryRange(value) {
+  if (!value || typeof value !== "object") return null;
+  if (value.range === "custom" && validDay(value.custom?.start) && validDay(value.custom?.end) && value.custom.start <= value.custom.end) {
+    return { range: "custom", custom: { start: value.custom.start, end: value.custom.end }, rangeOffset: 0, rangeChosen: true };
+  }
+  if (HISTORY_RANGE_VALUES.includes(value.range)) {
+    const offset = Number.isSafeInteger(value.rangeOffset) && Math.abs(value.rangeOffset) <= 10000 ? value.rangeOffset : 0;
+    return { range: value.range, rangeOffset: value.range ? offset : 0, rangeChosen: true };
+  }
+  return null;
+}
 
 function noteBody(markdown) {
   return markdown.slice(getFrontMatterInfo(markdown).contentStart);
@@ -46,7 +59,9 @@ class WritingHistoryView extends ItemView {
   async onOpen() {
     this.plugin.historyViews.add(this);
     await this.plugin.ready;
-    this.state.range = this.plugin.preferences.defaultRange;
+    const configured = this.plugin.preferences.defaultRange;
+    if (configured !== null) Object.assign(this.state, { range: configured, rangeOffset: 0, rangeChosen: true });
+    else if (this.plugin.preferences.lastHistoryRange) Object.assign(this.state, this.plugin.preferences.lastHistoryRange);
     this.draw();
   }
 
@@ -72,6 +87,7 @@ class WritingHistoryView extends ItemView {
       change: (update, selector) => {
         Object.assign(this.state, update);
         this.draw();
+        if ("range" in update || "rangeOffset" in update || "custom" in update) this.plugin.rememberHistoryRange?.(this.state);
         if (selector) {
           let control = this.contentEl.querySelector(selector);
           if (control?.disabled && control.closest(".mpa-calendar-header")) {
@@ -121,7 +137,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   daily = DEFAULT_DAILY;
   customFolders = [];
   folderDateRules = {};
-  preferences = { wordGoal: 750, customWords: {}, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, excludedFolders: [], defaultRange: 30, noteOrder: "newest" };
+  preferences = { wordGoal: 750, customWords: {}, wordListOverrides: {}, dateFormat: "", includeSubfolders: true, excludedFolders: [], defaultRange: null, lastHistoryRange: null, noteOrder: "newest" };
   folderTimer = null;
   activeFile = null;
   revision = 0;
@@ -145,7 +161,8 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         dateFormat: typeof saved.dateFormat === "string" ? saved.dateFormat.trim() : "",
         includeSubfolders: saved.includeSubfolders !== false,
         excludedFolders: normalizeFolders(saved.excludedFolders || []),
-        defaultRange: [0, 7, 14, 30, 60, 90, 180, 365].includes(saved.defaultRange) ? saved.defaultRange : 30,
+        defaultRange: HISTORY_RANGE_VALUES.includes(saved.defaultRange) ? saved.defaultRange : null,
+        lastHistoryRange: savedHistoryRange(saved.lastHistoryRange),
         noteOrder: saved.noteOrder === "oldest" ? "oldest" : "newest",
       };
       for (const path of this.records.keys()) if (isExcluded({ path }, this.preferences.excludedFolders)) this.records.delete(path);
@@ -260,6 +277,13 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   drawStats() { for (const view of this.statsViews) view.draw(); }
   drawHistory() { for (const view of this.historyViews) view.draw(); }
+
+  rememberHistoryRange(state) {
+    const range = savedHistoryRange(state);
+    if (!range || JSON.stringify(range) === JSON.stringify(this.preferences.lastHistoryRange)) return;
+    this.preferences.lastHistoryRange = range;
+    void this.persist();
+  }
 
   recordEdit() {
     const now = Date.now();

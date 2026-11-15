@@ -1,3 +1,23 @@
+# Progress — remember writing-history range (2026-11-15)
+
+Objective: allow a chosen default opening range or Last used across Writing history reopenings, including custom dates and navigated preset periods.
+
+Progress: 90% toward a verified 0.6.2 candidate. Implementation, final build and 29 tests pass; GitHub draft PR remains.
+
+- [x] Add Last used to history settings while preserving existing explicit defaults.
+- [x] Validate and persist preset, period offset and custom dates; apply on new view opens.
+- [x] Leave already-open history views on their selected range when the default setting changes.
+- [x] Pass 29 local tests, including settings browser checks and range persistence regressions.
+- [x] Run the final 0.6.2 build and 29-test suite.
+- [ ] Inspect the final diff.
+- [ ] Push a candidate branch and open a draft PR.
+
+Current state: local changes on the 0.6.1 checkout; installed plugin and personal vault are unchanged.
+
+Next steps: (1) inspect and push an isolated branch; (2) open a draft PR and review publication impact alongside Automatic Mood History.
+
+---
+
 # Progress — release verification (2026-11-15)
 
 Published 0.6.1: https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.1. Release workflow succeeded; all downloaded asset SHA-256 digests and plugin source parity verified.

@@ -1,3 +1,9 @@
+## 2026-11-15 — opening history range
+
+1. **Least confident:** Native Obsidian's view restoration across devices has not been checked. I would verify a chosen preset and custom range in a copied vault on desktop and mobile.
+2. **Biggest missing point:** Morning Pages Analytics already had a numeric opening default, so Last used must be an explicit unset choice rather than overwriting existing preferences. I preserved those numeric defaults.
+3. **Most consequential assumption:** Last used includes the navigated period offset and custom dates, not just the preset length. If the intended behavior is to reset to the newest period on reopening, I would store only the preset.
+
 ## 2026-11-15 — reliability release
 
 1. Least confident: native Obsidian/device and live-provider behavior. I would verify these in an isolated test vault before claiming native coverage.
