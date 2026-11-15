@@ -1,5 +1,53 @@
 # Progress
 
+## Current objective: verify publication of Morning Pages Analytics 0.6.0
+
+**Progress toward verified publication: 75%.** The release implementation, local build/tests, release commit, and local tags are complete. Remote publication, CI, asset verification, and optional native checks remain.
+
+- [x] Confirm the starting plugin version is 0.5.4 and inspect the working diff.
+- [x] Set `manifest.json`, `package.json` and `package-lock.json` to 0.6.0.
+- [x] Prepare excluded-folder behavior notes in README and [release notes](RELEASE_NOTES_0.6.0.md); document local verification limits.
+- [x] Update the release workflow to require `docs/RELEASE_NOTES_${VERSION}.md` and use it as the GitHub release description while preserving all existing release assets.
+- [x] `npm run build`: exit 0. `npm test`: exit 0; individual test runs show 22 passed and 2 browser-only checks skipped because Chrome/Chromium is unavailable. Native Obsidian was not tested.
+- [x] Check Obsidian's official release rule: the published tag must match the manifest version in `x.y.z` form.
+- [x] Review the implementation diff, release notes, workflow, and local test/build results.
+- [x] Create the local release commit and local tags `v0.6.0` and `0.6.0`; both tags point at the release commit at `HEAD`.
+- [x] Read the orchestrator instructions in `../../RELEASE_STEPS.md`.
+
+Remaining actions in order:
+
+1. Confirm the remote branch, numeric tag, and release state from this repository:
+
+   ```sh
+   git ls-remote origin refs/heads/main refs/tags/0.6.0
+   gh release view 0.6.0 --repo remriel/morning-pages-analytics
+   ```
+
+   Confirm remote `main` can accept this commit. If numeric tag `0.6.0` or the GitHub release already exists, stop and reconcile its target and release state before pushing.
+2. Push the branch, then the numeric tag:
+
+   ```sh
+   git push origin main
+   git push origin 0.6.0
+   ```
+
+   Do not push `v0.6.0`.
+3. Monitor the GitHub Actions release workflow triggered by the numeric tag push and wait for completion.
+4. Verify the remote tag target, release notes, and assets. The release should include `main.js`, `manifest.json`, `styles.css`, `LICENSE`, both screenshots, both banner files, and `morning-pages-analytics-0.6.0.zip`:
+
+   ```sh
+   git ls-remote origin refs/tags/0.6.0
+   gh release view 0.6.0 --repo remriel/morning-pages-analytics --json tagName,assets --jq '{tagName, assets: [.assets[].name]}'
+   gh release view 0.6.0 --repo remriel/morning-pages-analytics --json body --jq .body
+   ```
+5. Optionally verify the settings and active-note behavior in native Obsidian desktop/mobile. Local browser-only checks were skipped; native behavior remains unverified.
+
+Remote branch/tag/release state has not been queried in this handoff. No push or release publication has occurred. If remote version/tag state is unexpected, pause and reconcile before pushing.
+
+**Release notes:** Excluded-folder paths can be entered one per line. Each path excludes its descendants, including Daily Notes and additional writing folders. Excluded notes are removed from history totals and word-cloud results and do not show active-note live stats. Removing a path restores eligibility.
+
+**Scope note:** The separate `automatic-mood-history` fallback feature uses built-in lists only, not custom lists, and interprets “Grok” as Groq. It is outside this Morning Pages Analytics release.
+
 ## Current objective: refresh README and GitHub description (2026-11-12)
 
 **Progress toward verified publication: 100%.** `[##########]`
