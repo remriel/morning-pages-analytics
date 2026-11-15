@@ -2,7 +2,7 @@
 
 Objective: allow a chosen default opening range or Last used across Writing history reopenings, including custom dates and navigated preset periods.
 
-Progress: 100% toward a verified 0.6.2 candidate. Implementation, final build, 29 tests and draft GitHub PR are complete. Publication and installation remain separate pending steps.
+Progress: 100% — release 0.6.2 is published and its plugin assets are verified. Native installation remains unverified.
 
 - [x] Add Last used to history settings while preserving existing explicit defaults.
 - [x] Validate and persist preset, period offset and custom dates; apply on new view opens.
@@ -11,10 +11,11 @@ Progress: 100% toward a verified 0.6.2 candidate. Implementation, final build, 2
 - [x] Run the final 0.6.2 build and 29-test suite.
 - [x] Inspect the final diff and verify 0.6.2 version metadata.
 - [x] Push the candidate branch and open mergeable draft PR #2.
+- [x] Merge PR #2, publish 0.6.2 and verify release workflow 43751472429 and plugin asset hashes.
 
-Current state: candidate is synchronized on `feat/remember-history-range-0.6.2`; installed plugin and personal vault are unchanged. This repository has no PR CI check.
+Current state: 0.6.2 is published. The installed plugin and personal vault are unchanged.
 
-Next steps: (1) review publication impact alongside Automatic Mood History; (2) merge and publish 0.6.2 if approved, then verify release assets; (3) install and check the opening range in native Obsidian.
+Next step: update/reload 0.6.2 and verify the opening range in native Obsidian.
 
 ---
 

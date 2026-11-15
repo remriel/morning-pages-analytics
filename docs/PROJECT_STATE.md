@@ -2,11 +2,11 @@
 
 The user requested a default opening range setting in both Morning Pages Analytics and Automatic Mood History. In Morning Pages Analytics, the existing numeric default remains valid for users who selected it; new installs use `defaultRange: null` (Last used). `preferences.lastHistoryRange` stores the last preset, navigation offset, or valid custom dates. `src/plugin.js` validates that saved state, applies a numeric default when opening a new Writing history view, and otherwise restores the last choice. Range interactions save the choice through the plugin's existing serialized persistence. `src/settings.js` adds Last used and limits the opening setting to newly opened views, so exploring in an already-open view is not reset. No note text or analysis data changes.
 
-Relevant files: `src/plugin.js`, `src/settings.js`, `test/range-memory.test.cjs`, `test/fixtures/settings.html`, `README.md`, release metadata and `docs/RELEASE_NOTES_0.6.2.md`. The final build and `node --test` passed 29 tests, including browser settings and history controls, after version metadata and documentation were updated. Draft [PR #2](https://github.com/remriel/morning-pages-analytics/pull/2) is mergeable. This repository has a release workflow but no PR CI check. Native Obsidian remains unverified.
+Relevant files: `src/plugin.js`, `src/settings.js`, `test/range-memory.test.cjs`, `test/fixtures/settings.html`, `README.md`, release metadata and `docs/RELEASE_NOTES_0.6.2.md`. The final build and `node --test` passed 29 tests, including browser settings and history controls, after version metadata and documentation were updated. PR #2 merged as `9b609d6f71833dc9a7e2371d94ce74518b7011c0`; release [0.6.2 is published](https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.2). Release workflow 43751472429 succeeded; downloaded plugin asset hashes match GitHub's published digests. Native Obsidian remains unverified.
 
 ## RESUME HERE (0.6.2)
 
-The verified 0.6.2 candidate is in draft PR #2. Review publication and installation together with Automatic Mood History PR #29. The currently installed 0.6.1 plugin and personal vault remain unchanged.
+No release work remains. Update/reload Morning Pages Analytics 0.6.2 and verify preset/custom opening range in native Obsidian. The installed plugin and personal vault remain unchanged.
 
 ---
 

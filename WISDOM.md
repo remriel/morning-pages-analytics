@@ -1,3 +1,9 @@
+## 2026-11-15 — 0.6.2 published
+
+1. **Least confident:** The release workflow and asset hashes passed, but native range restoration in Obsidian remains unchecked. I would test preset and custom-range reopening after installation.
+2. **Biggest missing point:** Existing numeric defaults were preserved; Last used becomes the new-install opening choice and is available to existing users if selected.
+3. **Most consequential assumption:** Last used includes navigated period offsets and custom dates, not only a preset length. If it should reopen the newest period, I would store only the preset.
+
 ## 2026-11-15 — opening history range
 
 1. **Least confident:** Native Obsidian's view restoration across devices has not been checked. I would verify a chosen preset and custom range in a copied vault on desktop and mobile.
