@@ -35,6 +35,7 @@ jobs:
           test -s main.js
           node -e 'const m=require("./manifest.json"),p=require("./package.json");if(!/^\d+\.\d+\.\d+$/.test(m.version)||m.version!==p.version)process.exit(1)'
           VERSION=$(node -p 'require("./manifest.json").version')
+          test -s "docs/RELEASE_NOTES_${VERSION}.md"
           if [[ "${GITHUB_REF_TYPE}" == tag && "${GITHUB_REF_NAME}" != "${VERSION}" ]]; then
             echo "The release tag must match the plugin manifest version."
             exit 1
@@ -61,27 +62,4 @@ jobs:
           gh release create "${VERSION}" main.js manifest.json styles.css LICENSE assets/screenshots/writing-stats.png assets/screenshots/writing-history.png assets/github-banner.png assets/github-banner.svg "dist/morning-pages-analytics-${VERSION}.zip" \
             --target "${GITHUB_SHA}" \
             --title "Morning Pages Analytics ${VERSION}" \
-            --notes "$(cat <<EOF
-          Add writing folders faster with suggestions from your vault as you type.
-
-          **Folder suggestions:** In Folders, start typing a folder path and select a matching vault folder. Manual paths remain available.
-
-          Everything is processed locally in your vault. No note text or custom word lists are sent to an external service.
-
-          Morning Pages Analytics is an open-source Obsidian plugin for local writing stats and automatic Daily Notes history.
-
-          **For a note:** See word count, writing cues, mindset balances, pronouns, senses and a word cloud.
-
-          **Over time:** Browse word trends, category mix, goal streaks and a writing calendar. Filter by 7, 14, 30, 60, 90, 180 or 365 days, all dates, or a custom range. Inspect individual days and compare each period with the one before it.
-
-          Examples shown here use synthetic writing. The language charts count English word cues and are most useful for exploring patterns across notes.
-
-          ![Writing stats view](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/screenshots/writing-stats.png)
-
-          ![Daily writing history](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/screenshots/writing-history.png)
-
-          ![Morning Pages Analytics banner](https://raw.githubusercontent.com/remriel/morning-pages-analytics/main/assets/github-banner.png)
-
-          Released under the [MIT License](https://github.com/remriel/morning-pages-analytics/releases/download/${VERSION}/LICENSE).
-          EOF
-          )"
+            --notes-file "docs/RELEASE_NOTES_${VERSION}.md"
