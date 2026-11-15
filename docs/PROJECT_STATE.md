@@ -1,3 +1,15 @@
+# Project state — 0.6.2 opening range candidate (2026-11-15)
+
+The user requested a default opening range setting in both Morning Pages Analytics and Automatic Mood History. In Morning Pages Analytics, the existing numeric default remains valid for users who selected it; new installs use `defaultRange: null` (Last used). `preferences.lastHistoryRange` stores the last preset, navigation offset, or valid custom dates. `src/plugin.js` validates that saved state, applies a numeric default when opening a new Writing history view, and otherwise restores the last choice. Range interactions save the choice through the plugin's existing serialized persistence. `src/settings.js` adds Last used and limits the opening setting to newly opened views, so exploring in an already-open view is not reset. No note text or analysis data changes.
+
+Relevant files: `src/plugin.js`, `src/settings.js`, `test/range-memory.test.cjs`, `test/fixtures/settings.html`, `README.md`, release metadata and `docs/RELEASE_NOTES_0.6.2.md`. The final build and `node --test` passed 29 tests, including browser settings and history controls, after version metadata and documentation were updated. Draft [PR #2](https://github.com/remriel/morning-pages-analytics/pull/2) is mergeable. This repository has a release workflow but no PR CI check. Native Obsidian remains unverified.
+
+## RESUME HERE (0.6.2)
+
+The verified 0.6.2 candidate is in draft PR #2. Review publication and installation together with Automatic Mood History PR #29. The currently installed 0.6.1 plugin and personal vault remain unchanged.
+
+---
+
 # Project state — release verification (2026-11-15)
 
 Published 0.6.1: https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.1. Release workflow succeeded; all downloaded asset SHA-256 digests and plugin source parity verified.

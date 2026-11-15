@@ -12,7 +12,7 @@ Analyze the note you're writing, then explore how your writing changes across Da
 
 - **Live writing stats:** Word count, progress toward your daily goal, a word cloud, and charts for the active note.
 - **Writing history:** Word totals, writing and goal streaks, trends, language composition, and a calendar with individual-day inspection.
-- **Flexible periods:** 7, 14, 30, 60, 90, 180, or 365 days, all dates, or a custom range. Move backward or forward through preset periods and compare a finite range with the preceding period.
+- **Flexible periods:** 7, 14, 30, 60, 90, 180, or 365 days, all dates, or a custom range. Move backward or forward through preset periods and compare a finite range with the preceding period. Choose a default opening range or reopen the last range you used.
 - **Your own goals and word lists:** Set a daily word goal, edit the words behind each category, and add your own vocabulary.
 - **Multiple writing folders:** Include Daily Notes and other journal folders, with folder suggestions and a choice of filename dates or creation timestamps.
 
@@ -70,7 +70,7 @@ Under **Folders**, select **Add folder** and enter a vault-relative path such as
 
 Filename modes skip nonmatching or ambiguous dates without falling back to timestamps. For example, automatic mode skips `03-04-2026`; choose only the intended day-first or month-first format to resolve it. Daily Notes retain filename-date precedence. For overlapping additional folders, the most specific folder wins.
 
-Folder changes refresh history automatically after typing settles. To leave folders out of tracking, enter one vault-relative path per line under **Excluded folders**, using the same spelling and capitalization as the folder in the vault. Exclusions also apply to nested folders and Daily Notes. Subfolders are included by default; settings also offer a subfolder toggle, a Daily Notes filename-format override, a default history range, and newest/oldest creation-time order within a day. Use **Remove** to stop tracking an additional folder.
+Folder changes refresh history automatically after typing settles. To leave folders out of tracking, enter one vault-relative path per line under **Excluded folders**, using the same spelling and capitalization as the folder in the vault. Exclusions also apply to nested folders and Daily Notes. Subfolders are included by default; settings also offer a subfolder toggle, a Daily Notes filename-format override, a default history range, and newest/oldest creation-time order within a day. **Last used** reopens your previous preset, navigated period, or custom dates; choosing a default preset takes precedence on opening. Use **Remove** to stop tracking an additional folder.
 
 Creation-date entries keep their calendar date when their text is edited. Copying or syncing files can reset creation timestamps, so those dates may differ from when the writing was originally authored. Notes without valid creation timestamps are skipped in that mode. History assigns each file to one calendar day; it does not split a running monthly note into daily sections.
 

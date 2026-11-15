@@ -144,6 +144,9 @@
     await change("Default history range", "90");
     assertDropdownFits("Default history range"); assertDropdownFits("Note order within a day");
     assert(plugin.preferences.defaultRange === 90 && plugin.preferences.noteOrder === "oldest", "History controls regressed");
+    assert(control("Default history range").options[0].textContent === "Last used", "last-used option is available first");
+    await change("Default history range", "last");
+    assert(plugin.preferences.defaultRange === null && plugin.saved.defaultRange === null, "unset range is saved");
     await nav("folders");
     assertDropdownFits("Folder 1 date source");
     assert(root.querySelector("details").open, "Initial folder should be expanded");
