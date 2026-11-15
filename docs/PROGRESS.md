@@ -1,5 +1,21 @@
 # Progress — release verification (2026-11-15)
 
+Published 0.6.1: https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.1. Release workflow succeeded; all downloaded asset SHA-256 digests and plugin source parity verified.
+
+Progress: 100% toward this verified fix release.
+
+All 27 tests passed with MPA_REQUIRE_BROWSER=1 (no skips), including desktop/mobile-width browser fixtures, refresh concurrency and failed-save retry regressions.
+
+Implementation: Queued refreshes retain force, survive an initial scan failure, and stop on unload. Failed cache writes retry on unchanged refreshes.
+
+## RESUME HERE
+
+No required release steps remain. Native Obsidian and live Groq calls were not tested; no personal vault was modified. This is a verified fix set, not a guarantee that no undiscovered bugs remain.
+
+---
+
+# Progress — release verification (2026-11-15)
+
 Release candidate 0.6.1 verified locally; publication and remote asset verification remain.
 
 Progress: 90% toward this verified fix release.
