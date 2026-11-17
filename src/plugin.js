@@ -1,6 +1,6 @@
 const { ItemView, MarkdownView, Plugin, PluginSettingTab, Setting, getFrontMatterInfo, moment, normalizePath } = require("obsidian");
 const { analyzeWriting, keywordCounts, configureAnalysis, normalizeWordListOverrides } = analysis;
-const { normalizeFolderRule, CACHE_VERSION, includedDate, isExcluded, normalizeFolders, recordStats, loadRecords, combineKeywords, validDay } = history;
+const { normalizeFolderRule, CACHE_VERSION, includedDate, isExcluded, normalizeFolders, recordStats, loadRecords, groupDays, combineKeywords, validDay } = history;
 const { renderStats, renderHistory, renderVocabulary } = dashboard;
 
 const STATS_VIEW = "morning-pages-analytics";
@@ -71,12 +71,13 @@ class WritingHistoryView extends ItemView {
     this.contentEl.replaceChildren();
   }
 
-  draw() {
+  draw(reuseDays = false) {
+    if (!reuseDays || !this.days) this.days = groupDays(this.plugin.records.values());
     const scrollTop = this.contentEl.scrollTop;
     const drawVersion = ++this.drawVersion;
     this.disposeCharts();
     this.disposeCharts = renderHistory(this.contentEl, {
-      entries: this.plugin.records.values(),
+      days: this.days,
       today: moment().format("YYYY-MM-DD"),
       loading: Boolean(this.plugin.refreshing),
       status: this.plugin.status,
@@ -86,7 +87,7 @@ class WritingHistoryView extends ItemView {
       words: (period, previous, target) => void this.showWords(period, previous, target, drawVersion),
       change: (update, selector) => {
         Object.assign(this.state, update);
-        this.draw();
+        this.draw(true);
         if ("range" in update || "rangeOffset" in update || "custom" in update) this.plugin.rememberHistoryRange?.(this.state);
         if (selector) {
           let control = this.contentEl.querySelector(selector);

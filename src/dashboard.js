@@ -442,7 +442,7 @@ function renderHistory(root, input, state, actions) {
   }
   const refresh = button(tools, input.loading ? "Indexing…" : "Refresh daily history", actions.refresh);
   refresh.disabled = input.loading;
-  const days = groupDays(input.entries);
+  const days = input.days ?? groupDays(input.entries);
   if (!days.length) {
     card(root, input.loading ? "Building your history" : "No notes indexed", input.status || "Create a Daily Note or add a writing folder in the plugin settings. Additional folders use note creation dates.");
     return () => {};
@@ -525,6 +525,8 @@ function renderHistory(root, input, state, actions) {
   for (const entry of input.noteOrder === "oldest" ? [...day.entries].reverse() : day.entries) {
     const row = el(notes, "li");
     button(row, entry.path.split("/").at(-1).replace(/\.md$/i, ""), () => actions.openNote(entry.path));
+    const folder = entry.path.split("/").slice(0, -1).join("/") || "Vault root";
+    el(row, "span", "mpa-note-folder", folder);
     el(row, "span", "mpa-caption", `${number.format(entry.words)} words`);
   }
   return () => { for (const dispose of disposers) dispose(); };

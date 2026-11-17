@@ -1,0 +1,1 @@
+Calendar navigation, range changes and chart controls reuse grouped daily statistics. Day detail shows each source folder beside the note and word count. Includes descriptive filename recognition from 0.6.4.

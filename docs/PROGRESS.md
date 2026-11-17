@@ -1,3 +1,9 @@
+# 0.6.5 dashboard update
+
+Calendar navigation, range changes and chart controls reuse grouped daily statistics. Day detail shows each source folder beside the note and word count. Includes descriptive filename recognition from 0.6.4.
+
+Local functional tests passed. Release verification is recorded in the release workflow.
+
 # Current progress · 0.6.4
 
 100% of the indexing fix verified. Built and installed the plugin, passed 30 tests, and confirmed that every Markdown file in all six configured additional folders appeared in the rebuilt vault index. Dashboard rendering in the live vault was not visually inspected. If a daily total still differs, identify a specific note and check its assigned date.
@@ -332,4 +338,5 @@ Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plug
 
 1. Run **Open writing history** to browse indexed Daily Notes and selected ranges.
 2. For future releases, update the version, build the plugin, and push the tag matching the manifest version.
+
 

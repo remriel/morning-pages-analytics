@@ -145,3 +145,5 @@ The user confirmed they own the code and want it open source. I chose the MIT li
 1. The remaining uncertainty is which other note was expected on November 17. Trace a specific title to its assigned date.
 2. A note created today can count toward yesterday when its title contains yesterday's date. Inspect the folder date rule before comparing totals.
 3. The fix assumes filename dates represent the intended journal day. If the intended measure is words added on each editing day, that requires edit history.
+
+0.6.5 reflections: Device-specific rendering remains the least certain. Dashboard navigation cost depends on history size. The release prioritizes repeated interactions and preserves source attribution.

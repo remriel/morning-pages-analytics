@@ -267,3 +267,7 @@ body:not(.is-phone) .modal.mod-settings .vertical-tab-content.mpa-settings {
 @media (pointer: coarse) {
   .mpa-actions button, .mpa-field select, button.mpa-day { min-height: 40px; }
 }
+
+.mpa-notes li { border-block-end: 1px solid var(--background-modifier-border); padding-block: 6px; }
+.mpa-note-folder { color: var(--text-muted); font-size: .85em; overflow-wrap: anywhere; flex: 1 1 8rem; }
+.mpa-notes .mpa-caption { font-variant-numeric: tabular-nums; }

@@ -1,3 +1,9 @@
+# 0.6.5 dashboard update
+
+Calendar navigation, range changes and chart controls reuse grouped daily statistics. Day detail shows each source folder beside the note and word count. Includes descriptive filename recognition from 0.6.4.
+
+Local functional tests passed. Release verification is recorded in the release workflow.
+
 # Current project state · 0.6.4
 
 RESUME HERE: Automatic date matching in src/history.js now checks descriptive filenames for one unambiguous date when whole-title matching fails. Explicit filename formats and creation-time rules retain their existing behavior. Regression coverage lives in test/date-formats.test.cjs.
@@ -266,4 +272,5 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 ## RESUME HERE
 
 0.4.2 is installed in Remy and published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.2. The dashboard scroll fix passed browser and native desktop checks. Actual mobile Obsidian remains untested. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
+
 
