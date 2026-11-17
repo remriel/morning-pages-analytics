@@ -1,3 +1,7 @@
+# Current project state · 0.6.4
+
+RESUME HERE: Automatic date matching in src/history.js now checks descriptive filenames for one unambiguous date when whole-title matching fails. Explicit filename formats and creation-time rules retain their existing behavior. Regression coverage lives in test/date-formats.test.cjs.
+
 # Project state — 0.6.3 published (2026-11-17)
 
 The 0.6.3 candidate yields during large history indexing, folder event updates, and vocabulary reads. Candidate scans yield after each 100 files; record indexing and event processing use groups of eight with event-loop yields. Empty event queues no longer redraw history, and redraws follow only changed records. Live note analysis is debounced to 300 ms and reuses computed stats for the same file, text, and analysis settings. Persisting a history range does not clear vocabulary results.
@@ -262,3 +266,4 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 ## RESUME HERE
 
 0.4.2 is installed in Remy and published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.2. The dashboard scroll fix passed browser and native desktop checks. Actual mobile Obsidian remains untested. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
+

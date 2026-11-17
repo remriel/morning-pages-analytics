@@ -139,3 +139,9 @@ The user confirmed they own the code and want it open source. I chose the MIT li
 1. **Least confidence:** Native mobile behavior remains unverified. I would test the released plugin on a real device before expanding compatibility claims.
 2. **Biggest gap:** Category charts count vocabulary, and history assigns one date per file. I made these limits explicit so readers can judge whether the plugin suits their writing.
 3. **Highest-impact assumption:** The requested update concerns public project documentation for the current release. If a different audience or positioning was intended, I would revise the opening and feature emphasis.
+
+## 0.6.4 reflection
+
+1. The remaining uncertainty is which other note was expected on November 17. Trace a specific title to its assigned date.
+2. A note created today can count toward yesterday when its title contains yesterday's date. Inspect the folder date rule before comparing totals.
+3. The fix assumes filename dates represent the intended journal day. If the intended measure is words added on each editing day, that requires edit history.

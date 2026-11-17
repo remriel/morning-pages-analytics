@@ -38,3 +38,11 @@ test("old single-format rules migrate without changing their behavior", () => {
   assert.deepEqual(normalizeFolderRule({ source: "filename", formats: [] }).formats, []);
   assert.equal(date("2026-09-13", { source: "filename", formats: [""] }), "2026-09-13");
 });
+
+test("automatic folders recognize dates in descriptive and duplicate titles", () => {
+  for (const title of ["Archive/2026-11-16_ASD-STE100-bullets", "November 16 2026 Distill", "2026-11-16 (2)"]) {
+    assert.equal(date(title, { source: "auto" }), "2026-11-16");
+  }
+  assert.equal(date("2026-11-16 to 2026-11-17", { source: "auto" }), null);
+  assert.equal(date("Report 03-04-2026", { source: "auto" }), null);
+});

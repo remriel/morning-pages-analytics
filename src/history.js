@@ -59,6 +59,16 @@ function includedDate(file, daily, folders, moment, includeSubfolders = true, fo
       const day = dailyDate(file, settings, moment) || dailyDate({ path: `${folder}/${file.path.split("/").at(-1)}`, extension: file.extension }, settings, moment);
       if (day) dates.add(day);
     }
+    if (rule.source === "auto" && !dates.size) {
+      const title = file.path.split("/").at(-1).slice(0, -3);
+      const pattern = /(?:^|[^\p{L}\p{N}])(\d{4}[-._]\d{2}[-._]\d{2}|\d{8}|\d{2}-\d{2}-\d{4}|[A-Za-z]+ \d{1,2},? \d{4}|\d{1,2} [A-Za-z]+ \d{4})(?![\p{L}\p{N}])/gu;
+      for (const [, candidate] of title.matchAll(pattern)) {
+        for (const [format] of DATE_FORMAT_PRESETS) {
+          const parsed = moment(candidate, format, true);
+          if (parsed.isValid() && parsed.format(format) === candidate) dates.add(parsed.format("YYYY-MM-DD"));
+        }
+      }
+    }
     return dates.size === 1 ? [...dates][0] : null;
   }
   const timestamp = file.stat?.ctime;
