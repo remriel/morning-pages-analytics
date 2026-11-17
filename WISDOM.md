@@ -1,4 +1,6 @@
-## 2026-11-17 — 0.6.3 large-vault responsiveness candidate
+## 2026-11-17 — 0.6.3 published
+
+Release workflow 44155814773 passed its required test/build steps; all nine asset digests and the installation ZIP contents match. Native Obsidian behavior and personal-vault CPU impact remain unmeasured, so native validation is the user's follow-up.
 
 1. **Least confident:** Actual responsiveness in the user's native vault and Obsidian theme. The changes yield work and avoid some repeated analysis, but no on-device performance measurement is available. I would check during an ordinary edit and a full history refresh after installation.
 2. **Biggest missing point:** Event-loop yields make long operations less monopolizing but do not guarantee a specific CPU reduction or remove the total indexing work. I would compare the same vault action before and after rather than infer performance from code structure alone.

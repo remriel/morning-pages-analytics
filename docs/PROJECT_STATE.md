@@ -1,14 +1,14 @@
-# Project state — large-vault responsiveness candidate (0.6.3, 2026-11-17)
+# Project state — 0.6.3 published (2026-11-17)
 
 The 0.6.3 candidate yields during large history indexing, folder event updates, and vocabulary reads. Candidate scans yield after each 100 files; record indexing and event processing use groups of eight with event-loop yields. Empty event queues no longer redraw history, and redraws follow only changed records. Live note analysis is debounced to 300 ms and reuses computed stats for the same file, text, and analysis settings. Persisting a history range does not clear vocabulary results.
 
-Relevant file: `src/plugin.js`; release output is rebuilt as `main.js`. No note content or saved analysis is intentionally changed. The native Obsidian CPU and interaction effect remains unmeasured; the user plans to test the release in their vault. A baseline `npm test` completed with `MPA_REQUIRE_BROWSER=1` and passed 29 tests before these changes. The primary agent reports source syntax and diff checks passed; the mandatory release workflow will run tests/build after review.
+Relevant file: `src/plugin.js`; release output is rebuilt as `main.js`. No note content or saved analysis is intentionally changed. Release [0.6.3](https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.3) is published from commit `4838a9c9f518074ddc46dbad695243c43fca0029`. Workflow [44155814773](https://github.com/remriel/morning-pages-analytics/actions/runs/44155814773) passed the required 29-test browser suite, build, version/release-note checks, ZIP packaging, and publication. SHA-256 digests match for all nine release assets. The four ZIP entries (`main.js`, `manifest.json`, `styles.css`, and `LICENSE`) match the standalone release assets; generated local text files match the remote plugin assets after normalizing Windows line endings.
 
-Latest published version verified read-only from GitHub is 0.6.2; no 0.6.3 release exists yet. The final build, `node --check main.js`, `git diff --check`, and version/release-note alignment checks pass. The 29-test `npm test` baseline passed before candidate changes with `MPA_REQUIRE_BROWSER=1`; the candidate suite was not rerun locally.
+The native Obsidian CPU and interaction effect remains unmeasured; the user plans to check the release in their vault. No personal vault was changed. Local build, `node --check main.js`, `git diff --check`, and version/release-note alignment checks passed before publication.
 
 ## RESUME HERE (0.6.3)
 
-The final candidate build and diff review are complete. Push the commit to `main`, then push tag `0.6.3` to trigger `.github/workflows/publish-release.yml`. The workflow runs `npm ci`, `npm test` with `MPA_REQUIRE_BROWSER=1`, build and manifest/version/release-notes checks; it packages the four-file install ZIP and publishes plugin files, license, screenshots, banners, and ZIP. After publication, verify the tag, workflow, and release assets. Do not claim native performance is verified until the user tests Obsidian.
+No release work remains. The user-owned follow-up is to install/reload 0.6.3 in Obsidian and check editing responsiveness and history refresh behavior in their vault; do not present native performance as verified before that check.
 
 ---
 

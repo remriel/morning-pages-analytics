@@ -1,21 +1,21 @@
 # Progress — large-vault responsiveness (0.6.3)
 
-Objective: reduce uninterrupted history and live-analysis work in larger Morning Pages Analytics vaults, then prepare a reviewable release candidate.
+Objective: reduce uninterrupted history and live-analysis work in larger Morning Pages Analytics vaults and publish a verified release.
 
-Progress: 90% — the build artifact and release metadata are prepared and reviewed; publication, workflow, and asset verification remain.
+Progress: 100% — release 0.6.3 is published, its workflow passed, and all assets were verified. Native Obsidian testing is a user-owned follow-up.
 
 - [x] Yield during long file scans, event updates, and vocabulary reads in bounded batches.
 - [x] Avoid empty event flushes and unrelated history redraws.
 - [x] Cache unchanged active-note analysis, debounce typing to 300 ms, and preserve vocabulary cache on range saves.
 - [x] Verify latest published release 0.6.2 and prepare 0.6.3 version metadata and release notes.
 - [x] Build the final candidate and review the complete diff (`npm run build`, `node --check main.js`, `git diff --check`; full tests deferred to required CI).
-- [ ] Publish through the existing release workflow; retain its required test/build checks.
-- [ ] Verify release workflow success and assets, including the installation ZIP.
-- [ ] User checks native Obsidian behavior and performance in their vault.
+- [x] Publish through the existing release workflow; its required test/build checks passed.
+- [x] Verify release workflow 44155814773 and all nine asset digests, including the installation ZIP and its four entries.
+- [ ] User-owned follow-up: check native Obsidian behavior and performance in their vault.
 
-Tests/verification: baseline `npm test` passed 29 tests with browser checks enabled before this candidate. The primary agent reports source syntax and diff checks passed. Full suite and browser checks have not been rerun locally for this candidate; CI will run through the existing release workflow. Native Obsidian behavior remains unverified.
+Tests/verification: release workflow ran `npm test` with `MPA_REQUIRE_BROWSER=1` (29 passing), rebuilt the plugin, checked version metadata, and packaged the ZIP. All nine SHA-256 digests match GitHub's published digests; local generated plugin assets match after line-ending normalization. Native Obsidian behavior remains unverified.
 
-Next, commit and push to `main`, push tag `0.6.3` to start the required workflow, then verify the release assets.
+Next, the user can install/reload 0.6.3 and check responsiveness in native Obsidian. No release work remains.
 
 ---
 
