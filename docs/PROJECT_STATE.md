@@ -1,3 +1,7 @@
+# Verified release 0.6.5
+
+100% complete. Published https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.5 and verified SHA-256 digests of main.js, manifest.json and styles.css after installation in Remy. Browser checks passed. Native device responsiveness remains unmeasured. RESUME HERE for the next release.
+
 # 0.6.5 dashboard update
 
 Calendar navigation, range changes and chart controls reuse grouped daily statistics. Day detail shows each source folder beside the note and word count. Includes descriptive filename recognition from 0.6.4.
@@ -272,5 +276,6 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 ## RESUME HERE
 
 0.4.2 is installed in Remy and published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.4.2. The dashboard scroll fix passed browser and native desktop checks. Actual mobile Obsidian remains untested. Preserve automatic indexing, the note and range breakdowns, and MIT licensing in future releases.
+
 
 
