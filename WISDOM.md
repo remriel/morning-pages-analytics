@@ -1,3 +1,11 @@
+## 2026-11-17 — 0.6.3 large-vault responsiveness candidate
+
+1. **Least confident:** Actual responsiveness in the user's native vault and Obsidian theme. The changes yield work and avoid some repeated analysis, but no on-device performance measurement is available. I would check during an ordinary edit and a full history refresh after installation.
+2. **Biggest missing point:** Event-loop yields make long operations less monopolizing but do not guarantee a specific CPU reduction or remove the total indexing work. I would compare the same vault action before and after rather than infer performance from code structure alone.
+3. **Most consequential assumption:** Reusing active-note analysis is safe when the file, text, and analysis settings match. If a hidden input to the analyzer changes without changing those values, the cache key must include it or be invalidated.
+
+---
+
 ## 2026-11-15 — 0.6.2 published
 
 1. **Least confident:** The release workflow and asset hashes passed, but native range restoration in Obsidian remains unchecked. I would test preset and custom-range reopening after installation.

@@ -1,3 +1,17 @@
+# Project state — large-vault responsiveness candidate (0.6.3, 2026-11-17)
+
+The 0.6.3 candidate yields during large history indexing, folder event updates, and vocabulary reads. Candidate scans yield after each 100 files; record indexing and event processing use groups of eight with event-loop yields. Empty event queues no longer redraw history, and redraws follow only changed records. Live note analysis is debounced to 300 ms and reuses computed stats for the same file, text, and analysis settings. Persisting a history range does not clear vocabulary results.
+
+Relevant file: `src/plugin.js`; release output is rebuilt as `main.js`. No note content or saved analysis is intentionally changed. The native Obsidian CPU and interaction effect remains unmeasured; the user plans to test the release in their vault. A baseline `npm test` completed with `MPA_REQUIRE_BROWSER=1` and passed 29 tests before these changes. The primary agent reports source syntax and diff checks passed; the mandatory release workflow will run tests/build after review.
+
+Latest published version verified read-only from GitHub is 0.6.2; no 0.6.3 release exists yet. The final build, `node --check main.js`, `git diff --check`, and version/release-note alignment checks pass. The 29-test `npm test` baseline passed before candidate changes with `MPA_REQUIRE_BROWSER=1`; the candidate suite was not rerun locally.
+
+## RESUME HERE (0.6.3)
+
+The final candidate build and diff review are complete. Push the commit to `main`, then push tag `0.6.3` to trigger `.github/workflows/publish-release.yml`. The workflow runs `npm ci`, `npm test` with `MPA_REQUIRE_BROWSER=1`, build and manifest/version/release-notes checks; it packages the four-file install ZIP and publishes plugin files, license, screenshots, banners, and ZIP. After publication, verify the tag, workflow, and release assets. Do not claim native performance is verified until the user tests Obsidian.
+
+---
+
 # Project state — 0.6.2 opening range candidate (2026-11-15)
 
 The user requested a default opening range setting in both Morning Pages Analytics and Automatic Mood History. In Morning Pages Analytics, the existing numeric default remains valid for users who selected it; new installs use `defaultRange: null` (Last used). `preferences.lastHistoryRange` stores the last preset, navigation offset, or valid custom dates. `src/plugin.js` validates that saved state, applies a numeric default when opening a new Writing history view, and otherwise restores the last choice. Range interactions save the choice through the plugin's existing serialized persistence. `src/settings.js` adds Last used and limits the opening setting to newly opened views, so exploring in an already-open view is not reset. No note text or analysis data changes.

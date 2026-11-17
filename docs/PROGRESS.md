@@ -1,3 +1,24 @@
+# Progress — large-vault responsiveness (0.6.3)
+
+Objective: reduce uninterrupted history and live-analysis work in larger Morning Pages Analytics vaults, then prepare a reviewable release candidate.
+
+Progress: 90% — the build artifact and release metadata are prepared and reviewed; publication, workflow, and asset verification remain.
+
+- [x] Yield during long file scans, event updates, and vocabulary reads in bounded batches.
+- [x] Avoid empty event flushes and unrelated history redraws.
+- [x] Cache unchanged active-note analysis, debounce typing to 300 ms, and preserve vocabulary cache on range saves.
+- [x] Verify latest published release 0.6.2 and prepare 0.6.3 version metadata and release notes.
+- [x] Build the final candidate and review the complete diff (`npm run build`, `node --check main.js`, `git diff --check`; full tests deferred to required CI).
+- [ ] Publish through the existing release workflow; retain its required test/build checks.
+- [ ] Verify release workflow success and assets, including the installation ZIP.
+- [ ] User checks native Obsidian behavior and performance in their vault.
+
+Tests/verification: baseline `npm test` passed 29 tests with browser checks enabled before this candidate. The primary agent reports source syntax and diff checks passed. Full suite and browser checks have not been rerun locally for this candidate; CI will run through the existing release workflow. Native Obsidian behavior remains unverified.
+
+Next, commit and push to `main`, push tag `0.6.3` to start the required workflow, then verify the release assets.
+
+---
+
 # Progress — remember writing-history range (2026-11-15)
 
 Objective: allow a chosen default opening range or Last used across Writing history reopenings, including custom dates and navigated preset periods.

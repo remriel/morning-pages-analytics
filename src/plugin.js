@@ -183,7 +183,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
       if (!this.statsViews.size || !view?.file || view.file !== this.activeFile) return;
       this.recordEdit();
       clearTimeout(this.statsTimer);
-      this.statsTimer = setTimeout(() => void this.inspect(view.file, editor), 110);
+      this.statsTimer = setTimeout(() => void this.inspect(view.file, editor), 300);
     }));
     this.registerEvent(vault.on("create", (file) => this.queue(file.path)));
     this.registerEvent(vault.on("modify", (file) => {
@@ -208,6 +208,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
   onunload() {
     this.stopped = true;
     this.revision++;
+    this.lastInspection = null;
     clearTimeout(this.statsTimer);
     clearTimeout(this.historyTimer);
     clearTimeout(this.folderTimer);
@@ -236,11 +237,13 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     if (this.activeFile !== file) this.editSession = null;
     this.activeFile = file?.extension === "md" ? file : null;
     if (!this.activeFile) {
+      this.lastInspection = null;
       this.live = {};
       this.drawStats();
       return;
     }
     if (isExcluded(file, this.preferences.excludedFolders)) {
+      this.lastInspection = null;
       this.editSession = null;
       this.live = { name: file.basename, message: "This note is in an excluded folder." };
       this.drawStats();
@@ -261,7 +264,11 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         this.drawStats();
         return;
       }
-      const stats = analyzeWriting(noteBody(text));
+      const analysisKey = JSON.stringify([this.preferences.wordGoal, this.preferences.customWords, this.preferences.wordListOverrides]);
+      const cached = this.lastInspection;
+      const stats = cached?.file === file && cached.text === text && cached.analysisKey === analysisKey
+        ? cached.stats : analyzeWriting(noteBody(text));
+      this.lastInspection = { file, text, analysisKey, stats };
       if (editor && this.editSession) this.editSession.current = stats.words;
       const session = this.editSession;
       const pace = session?.activeMs >= 3000 && session.current > session.start
@@ -282,7 +289,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     const range = savedHistoryRange(state);
     if (!range || JSON.stringify(range) === JSON.stringify(this.preferences.lastHistoryRange)) return;
     this.preferences.lastHistoryRange = range;
-    void this.persist();
+    void this.persist(false);
   }
 
   recordEdit() {
@@ -351,7 +358,15 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     await this.ready;
     if (this.flushing) await this.flushing;
     this.daily = await this.dailySettings();
-    const candidates = this.app.vault.getMarkdownFiles().map((file) => [file, includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders)]).filter(([, date]) => date);
+    const candidates = [];
+    const files = this.app.vault.getMarkdownFiles();
+    for (let index = 0; index < files.length && !this.stopped; index++) {
+      const file = files[index];
+      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders);
+      if (date) candidates.push([file, date]);
+      if (index % 100 === 99) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (this.stopped) return;
     const eligible = new Set(candidates.map(([file]) => file.path));
     let changed = false;
     let failed = 0;
@@ -364,6 +379,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         if (result.status === "fulfilled") changed = result.value || changed;
         else failed++;
       }
+      if (index + 8 < candidates.length) await new Promise(resolve => setTimeout(resolve, 0));
     }
     if (this.stopped) return;
     this.status = failed ? `${failed} daily ${failed === 1 ? "note could" : "notes could"} not be read.` : "";
@@ -394,10 +410,12 @@ module.exports = class MorningPagesAnalytics extends Plugin {
     if (this.refreshing || this.flushing || this.stopped) return;
     const paths = [...this.dirty];
     this.dirty.clear();
-    this.flushing = this.updatePaths(paths).finally(() => {
+    if (!paths.length) return;
+    let changed = false;
+    this.flushing = this.updatePaths(paths).then(value => { changed = value; }).finally(() => {
       this.flushing = null;
       if (!this.stopped) {
-        this.drawHistory();
+        if (changed) this.drawHistory();
         if (this.dirty.size) this.queue();
       }
     });
@@ -405,17 +423,26 @@ module.exports = class MorningPagesAnalytics extends Plugin {
 
   async updatePaths(paths) {
     await this.ready;
-    const results = await Promise.allSettled(paths.map((path) => {
-      const file = this.app.vault.getAbstractFileByPath(path);
-      const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders);
-      return date ? this.indexFile(file, date, true) : this.records.delete(path);
-    }));
-    if (results.some((result) => result.status === "rejected")) this.status = "Some daily notes could not be read. Refresh to retry.";
-    if (!this.stopped && (this.cacheSaveFailed || results.some((result) => result.status === "fulfilled" && result.value))) await this.persist();
+    let changed = false;
+    let failed = false;
+    for (let index = 0; index < paths.length && !this.stopped; index += 8) {
+      const results = await Promise.allSettled(paths.slice(index, index + 8).map((path) => {
+        const file = this.app.vault.getAbstractFileByPath(path);
+        const date = includedDate(file, this.daily, this.customFolders, moment, this.preferences.includeSubfolders, this.folderDateRules, this.preferences.excludedFolders);
+        // Delivered events still force a read: sync can preserve timestamps.
+        return date ? this.indexFile(file, date, true) : this.records.delete(path);
+      }));
+      failed ||= results.some(result => result.status === "rejected");
+      changed ||= results.some(result => result.status === "fulfilled" && result.value);
+      if (index + 8 < paths.length) await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (failed) this.status = "Some daily notes could not be read. Refresh to retry.";
+    if (!this.stopped && (this.cacheSaveFailed || changed)) await this.persist();
+    return changed || failed;
   }
 
-  async persist() {
-    this.vocabularyCache.clear();
+  async persist(invalidateVocabulary = true) {
+    if (invalidateVocabulary) this.vocabularyCache.clear();
     const data = { version: CACHE_VERSION, preferences: JSON.parse(JSON.stringify(this.preferences)), folderDateRules: Object.fromEntries(normalizeFolders(this.customFolders).map((folder) => [folder, { ...this.folderDateRules[folder] }])), customFolders: normalizeFolders(this.customFolders), entries: [...this.records.values()].sort((a, b) => a.path.localeCompare(b.path)) };
     this.writeTail = this.writeTail.catch(() => {}).then(() => this.saveData(data));
     try {
@@ -462,6 +489,7 @@ module.exports = class MorningPagesAnalytics extends Plugin {
         return true;
       }));
       missing += results.filter((result) => result.status === "rejected" || !result.value).length;
+      if (index + 8 < entries.length) await new Promise(resolve => setTimeout(resolve, 0));
     }
     return { counts, words, missing };
   }
