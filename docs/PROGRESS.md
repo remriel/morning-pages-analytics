@@ -349,3 +349,4 @@ Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plug
 ## 0.6.6 audit
 
 Implementation and regression checks prepared. Next: verify CI and published downloads.
+Verified release 0.6.6 - 100%. Local suite passed. GitHub release workflow 44390203734 passed. All 9 published downloads passed digest and attestation verification. Publication complete.
