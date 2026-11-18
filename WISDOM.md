@@ -147,3 +147,7 @@ The user confirmed they own the code and want it open source. I chose the MIT li
 3. The fix assumes filename dates represent the intended journal day. If the intended measure is words added on each editing day, that requires edit history.
 
 0.6.5 reflections: Device-specific rendering remains the least certain. Dashboard navigation cost depends on history size. The release prioritizes repeated interactions and preserves source attribution.
+
+## 0.6.6 audit
+
+Confidence is lowest in native mobile behavior. A full-suite pass covers modeled cases. The audit assumes supported vault data follows the documented schema. A device smoke test would reduce uncertainty.

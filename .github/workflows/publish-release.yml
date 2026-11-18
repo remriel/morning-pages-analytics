@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: morning-pages-analytics-release
@@ -49,6 +51,20 @@ jobs:
           cp LICENSE dist/
           cd dist
           zip -q "morning-pages-analytics-${VERSION}.zip" morning-pages-analytics/main.js morning-pages-analytics/manifest.json morning-pages-analytics/styles.css LICENSE
+
+      - name: Attest downloadable assets
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+            LICENSE
+            assets/screenshots/writing-stats.png
+            assets/screenshots/writing-history.png
+            assets/github-banner.png
+            assets/github-banner.svg
+            dist/*.zip
 
       - name: Publish Obsidian release
         env:

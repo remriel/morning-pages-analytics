@@ -105,6 +105,8 @@ test("history groups same-day notes, respects gaps, and preserves totals across 
   assert.equal(summarizeDays(days, "2026-11-04").current, 0);
   const window = historyWindow(days, "2026-11-09", 7);
   assert.deepEqual(window.days.map(({ date }) => date), ["2026-11-04"]);
+  assert.equal(summarizeDays([...days, entry("2027-01-01", 750)], "2026-11-03").current, 2);
+  assert.equal(historyWindow([], "0000-01-02", 7).start, "0000-01-01");
   const year = seriesBuckets(historyWindow(days, "2026-11-09", 365));
   assert.equal(year.step, 7);
   assert.equal(year.buckets.reduce((sum, row) => sum + row.words, 0), 3000);

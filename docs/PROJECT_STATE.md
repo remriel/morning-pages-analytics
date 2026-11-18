@@ -279,3 +279,7 @@ A source ZIP linked in a prior chat could not be retrieved from this environment
 
 
 
+
+## 0.6.6 audit
+
+RESUME HERE: Future goal days could erase the current streak. Track the most recent qualifying streak through today separately from the all-history best. Clamp rolling ranges at year 0000. Publish GitHub artifact attestations for every downloadable release file (issue #3).

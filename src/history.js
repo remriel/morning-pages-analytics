@@ -125,7 +125,7 @@ function historyWindow(days, today, range, custom) {
   const last = days.at(-1)?.date ?? today;
   const customRange = range === "custom" && validDay(custom?.start) && validDay(custom?.end) && custom.start <= custom.end;
   const end = customRange ? custom.end : last > today ? last : today;
-  const start = customRange ? custom.start : range === 0 ? days[0]?.date ?? end : isoDay(ordinal(end) - (Number(range) || 30) + 1);
+  const start = customRange ? custom.start : range === 0 ? days[0]?.date ?? end : isoDay(Math.max(ordinal("0000-01-01"), ordinal(end) - (Number(range) || 30) + 1));
   return { start, end, days: days.filter(({ date }) => date >= start && date <= end) };
 }
 
@@ -146,6 +146,7 @@ function summarizeDays(days, today) {
   let best = 0;
   let streak = 0;
   let previous = -Infinity;
+  let currentStreak = 0;
   let goalDays = 0;
   let writingDays = 0;
   for (const day of days) {
@@ -157,9 +158,10 @@ function summarizeDays(days, today) {
     streak = current === previous + 1 ? streak + 1 : 1;
     best = Math.max(best, streak);
     previous = current;
+    const distance = ordinal(today) - current;
+    if (distance === 0 || distance === 1) currentStreak = streak;
   }
-  const distance = ordinal(today) - previous;
-  return { ...total, writingDays, goalDays, best, current: distance >= 0 && distance <= 1 ? streak : 0 };
+  return { ...total, writingDays, goalDays, best, current: currentStreak };
 }
 
 function seriesBuckets(window) {

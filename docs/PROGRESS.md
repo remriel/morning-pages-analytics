@@ -345,3 +345,7 @@ Publish Morning Pages Analytics 0.4.1 as a standalone MIT licensed Obsidian plug
 
 
 
+
+## 0.6.6 audit
+
+Implementation and regression checks prepared. Next: verify CI and published downloads.
