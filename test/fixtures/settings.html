@@ -97,6 +97,12 @@
     const tab = new (settings.createSettingsTab(window.require().PluginSettingTab, window.require().Setting))(app, plugin);
     await tab.display();
     const root = tab.containerEl;
+    const support = root.lastElementChild;
+    const coffee = support.querySelector("a");
+    assert(support.tagName === "FOOTER" && support.textContent.includes("support continued development"), "Support footer missing from bottom of settings");
+    assert(support.querySelectorAll("a").length === 1 && coffee.href === "https://buymeacoffee.com/remriel", "Expected only the README's Buy Me a Coffee link");
+    assert(getComputedStyle(coffee).backgroundImage.startsWith('url("data:image/png;base64,'), "Coffee button artwork must be bundled");
+
     const control = (label) => { const input = root.querySelector(`[aria-label="${label}"]`); assert(input, `Missing control: ${label}`); return input; };
     const assertDropdownFits = (label) => {
       const input = control(label);

@@ -1,3 +1,6 @@
+# 0.6.7 support footer
+
+Progress 75%. Footer, branded button, version metadata, and release notes are implemented. An initial local test caught a fixture variable ordering error, which has been corrected. Next run the browser-enabled suite and build, push main and tag 0.6.7, then verify publication and download assets. No known implementation blockers.
 # Verified release 0.6.5
 
 100% complete. Published https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.5 and verified SHA-256 digests of main.js, manifest.json and styles.css after installation in Remy. Browser checks passed. Native device responsiveness remains unmeasured. RESUME HERE for the next release.

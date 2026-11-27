@@ -52,6 +52,12 @@ function createSettingsTab(PluginSettingTab, Setting) {
       if (this.section === "words") this.renderWords(panel);
       if (this.section === "history") this.renderHistory(panel);
       if (this.section === "folders") this.renderFolders(panel);
+      const support = element(root, "footer", "mpa-settings-support");
+      element(support, "p", "", "If this plugin adds value for you and you would like to help support continued development, please use the button below:");
+      const coffee = element(support, "a", "mpa-settings-coffee", "Buy Me a Coffee");
+      coffee.href = "https://buymeacoffee.com/remriel";
+      coffee.target = "_blank";
+      coffee.rel = "noopener noreferrer";
       if (focusSelector) root.querySelector(focusSelector)?.focus({ preventScroll: true });
     }
 
