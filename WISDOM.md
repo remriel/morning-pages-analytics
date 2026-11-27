@@ -1,3 +1,9 @@
+# 2026-11-26 — Morning Pages Analytics 0.6.7
+
+1. Least confident about how the footer looks in a heavily customized Obsidian theme. I would check it in the native app under the active theme.
+2. Settings has four tabs. Placing the footer beneath the active panel keeps the support link available from each tab. I would use the same placement for any future settings-wide links.
+3. I assumed the README identifies the intended recipient. If the creator account changes, I would update the Settings and README links together.
+
 ## 2026-11-17 — 0.6.3 published
 
 Release workflow 44155814773 passed its required test/build steps; all nine asset digests and the installation ZIP contents match. Native Obsidian behavior and personal-vault CPU impact remain unmeasured, so native validation is the user's follow-up.

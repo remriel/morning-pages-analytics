@@ -1,6 +1,9 @@
 # 0.6.7 support footer
 
-RESUME HERE. The 0.6.7 patch puts a shared footer after the active Settings panel in src/settings.js. The README supplies the creator URL. The official yellow button is embedded in styles.css so the existing Obsidian assets render it without contacting a CDN. The footer uses singular wording from the screenshot because it has one link. The browser fixture checks placement, destination, and bundled artwork. Codex owns the release through the tagged GitHub Actions workflow.
+RESUME HERE. Morning Pages Analytics 0.6.7 is published at https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.7. Source commit e22fca8 is tagged 0.6.7. Codex verified CI and release assets. No release work remains.
+
+The patch puts a shared footer after the active Settings panel in src/settings.js. The README supplies the creator URL. The official yellow PNG is embedded in styles.css so existing Obsidian release assets render it offline. The footer uses the singular wording because it has one link. The existing settings browser fixture now checks placement, destination, and bundled artwork. The initial fixture declaration-order error was corrected. Native Obsidian testing remains unverified.
+
 # Verified release 0.6.5
 
 100% complete. Published https://github.com/remriel/morning-pages-analytics/releases/tag/0.6.5 and verified SHA-256 digests of main.js, manifest.json and styles.css after installation in Remy. Browser checks passed. Native device responsiveness remains unmeasured. RESUME HERE for the next release.
